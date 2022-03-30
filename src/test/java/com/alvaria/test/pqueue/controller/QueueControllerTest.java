@@ -7,12 +7,11 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 
 import com.alvaria.test.pqueue.service.QueueService;
-import com.alvaria.test.pqueue.util.Consts;
+import com.alvaria.test.pqueue.util.Const;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
-import org.apache.tomcat.util.bcel.Const;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,7 +45,7 @@ class QueueControllerTest {
   void vanillaCreateNewOrder() {
 
     LocalDateTime now = LocalDateTime.now();
-    String stringNow = now.format(DateTimeFormatter.ofPattern(Consts.REST_DATETIME_FORMAT));
+    String stringNow = now.format(DateTimeFormatter.ofPattern(Const.REST_DATETIME_FORMAT));
     willDoNothing().given(queueService).createNewOrder(1L, now);
 
     ResponseEntity<Void> response = restTemplate.postForEntity("/api/1/" + stringNow, null, Void.class);
