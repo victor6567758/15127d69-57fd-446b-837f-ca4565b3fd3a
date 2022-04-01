@@ -1,7 +1,7 @@
 package com.alvaria.test.pqueue.service.queues;
 
 import com.alvaria.test.pqueue.model.QueueData;
-import com.alvaria.test.pqueue.service.queues.rules.DequeuedRule;
+import com.alvaria.test.pqueue.service.queues.rules.DequeueRule;
 import com.alvaria.test.pqueue.util.pqueue.OrderPriorityQueue;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -13,7 +13,7 @@ public class ManagementQueue extends OrderQueueBase {
   }
 
   @Override
-  public Pair<DequeuedRule, Double> dequeueHelper(double prevPriority, DequeuedRule prevQueue) {
+  public Pair<DequeueRule, Double> dequeueHelper(double prevPriority, DequeueRule prevQueue) {
     return new ImmutablePair<>(this, Double.MAX_VALUE);
   }
 

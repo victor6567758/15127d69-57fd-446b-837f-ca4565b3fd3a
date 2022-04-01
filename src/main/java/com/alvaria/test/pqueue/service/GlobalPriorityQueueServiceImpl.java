@@ -6,10 +6,10 @@ import com.alvaria.test.pqueue.service.queues.NormalQueue;
 import com.alvaria.test.pqueue.service.queues.OrderQueueBase;
 import com.alvaria.test.pqueue.service.queues.PrioritizedQueue;
 import com.alvaria.test.pqueue.service.queues.VipQueue;
-import com.alvaria.test.pqueue.service.queues.rules.DequeuedRule;
+import com.alvaria.test.pqueue.service.queues.rules.DequeueRule;
 import com.alvaria.test.pqueue.service.queues.rules.RemoveRule;
-import com.alvaria.test.pqueue.service.queues.rules.RoutedRule;
-import com.alvaria.test.pqueue.util.OrderMaxRankIterableAdapter;
+import com.alvaria.test.pqueue.service.queues.rules.EnqueueRule;
+import com.alvaria.test.pqueue.util.MaxIterableAdapter;
 import com.alvaria.test.pqueue.util.pqueue.OrderPriorityQueueFactory;
 import java.util.Arrays;
 import java.util.List;
@@ -21,12 +21,7 @@ import java.util.stream.StreamSupport;
 import org.springframework.stereotype.Service;
 
 @Service
-public class GlobalPriorityQueueImpl implements GlobalPriorityQueue {
-
-  private static final int ID_MANAGEMENT_QUEUE = 0;
-  private static final int ID_NORMAL_QUEUE = 1;
-  private static final int ID_PRIORITY_QUEUE = 2;
-  private static final int ID_VIP_QUEUE = 3;
+public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueService {
 
   private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
   private final ReadLock readLock = lock.readLock();
@@ -37,20 +32,21 @@ public class GlobalPriorityQueueImpl implements GlobalPriorityQueue {
   private final VipQueue vipQueue = new VipQueue(OrderPriorityQueueFactory.create());
   private final NormalQueue normalQueue = new NormalQueue(OrderPriorityQueueFactory.create());
 
-  private final RoutedRule routedRule = managementQueue
-      .appendNextRoute(prioritizedQueue)
-      .appendNextRoute(vipQueue)
-      .appendNextRoute(normalQueue);
+  private final EnqueueRule routedRule = managementQueue
+      .appendNextEnqueueRule(prioritizedQueue)
+      .appendNextEnqueueRule(vipQueue)
+      .appendNextEnqueueRule(normalQueue);
 
-  private final DequeuedRule dequeuedRule = managementQueue
-      .appendNextTopQueue(prioritizedQueue)
-      .appendNextTopQueue(vipQueue)
-      .appendNextTopQueue(normalQueue);
+  private final DequeueRule dequeuedRule = managementQueue
+      .appendNextDequeueRule(prioritizedQueue)
+      .appendNextDequeueRule(vipQueue)
+      .appendNextDequeueRule(normalQueue);
 
   private final RemoveRule removeRule = managementQueue
-      .appendNextRemove(prioritizedQueue)
-      .appendNextRemove(vipQueue)
-      .appendNextRemove(normalQueue);
+      .appendNextRemoveRule(prioritizedQueue)
+      .appendNextRemoveRule(vipQueue)
+      .appendNextRemoveRule(normalQueue);
+
 
   @Override
   public void enqueue(QueueData queueData) {
@@ -72,12 +68,12 @@ public class GlobalPriorityQueueImpl implements GlobalPriorityQueue {
   public QueueData dequeue() {
     writeLock.lock();
     try {
-      DequeuedRule topQueue = dequeuedRule.dequeueHelper(-1, null).getLeft();
-      if (topQueue == null) {
+      DequeueRule topRule = dequeuedRule.dequeueHelper(-1, null).getLeft();
+      if (topRule == null) {
         throw new IllegalArgumentException("No data in the queue");
       }
 
-      return ((OrderQueueBase) topQueue).getOrderPriorityQueue().dequeue();
+      return ((OrderQueueBase) topRule).getOrderPriorityQueue().removeFirst();
 
     } finally {
       writeLock.unlock();
@@ -95,19 +91,13 @@ public class GlobalPriorityQueueImpl implements GlobalPriorityQueue {
   }
 
   @Override
-  public List<QueueData> getList() {
+  public List<Long> getIdListSortedByPriority() {
     readLock.lock();
     try {
-      OrderMaxRankIterableAdapter<QueueData> adapter = new OrderMaxRankIterableAdapter<>(
-          (o1, o2) -> o2.getEnqueueEpochTimeSec() - o1.getEnqueueEpochTimeSec(),
-          Arrays.asList(
-              managementQueue.getOrderPriorityQueue().iterator(),
-              prioritizedQueue.getOrderPriorityQueue().iterator(),
-              vipQueue.getOrderPriorityQueue().iterator(),
-              normalQueue.getOrderPriorityQueue().iterator()
-          ));
 
-      return StreamSupport.stream(adapter.spliterator(), false).collect(Collectors.toList());
+      return StreamSupport.stream(getIterableAdapter().spliterator(), false)
+          .map(QueueData::getId)
+          .collect(Collectors.toList());
 
     } finally {
       readLock.unlock();
@@ -120,33 +110,45 @@ public class GlobalPriorityQueueImpl implements GlobalPriorityQueue {
     readLock.lock();
     try {
 
+      int[] sequenceNum = new int[1];
+      StreamSupport.stream(getIterableAdapter().spliterator(), false)
+          .takeWhile(queueData -> queueData.getId() != id).forEach(elem -> sequenceNum[0]++);
+
+      return sequenceNum[0];
     } finally {
       readLock.unlock();
     }
-    return -1;
   }
 
 
   @Override
-  public double avrSeqWaitTime(long currentEpochTimeSec) {
+  public double getAverageWaitTime(long currentEpochTimeSec) {
     readLock.lock();
     try {
-      OrderMaxRankIterableAdapter<QueueData> adapter = new OrderMaxRankIterableAdapter<>(
-          (o1, o2) -> o2.getEnqueueEpochTimeSec() - o1.getEnqueueEpochTimeSec(),
-          Arrays.asList(
-              managementQueue.getOrderPriorityQueue().iterator(),
-              prioritizedQueue.getOrderPriorityQueue().iterator(),
-              vipQueue.getOrderPriorityQueue().iterator(),
-              normalQueue.getOrderPriorityQueue().iterator()
-          ));
-
-      return StreamSupport.stream(adapter.spliterator(), false)
-          .mapToDouble(value -> currentEpochTimeSec - value.getEnqueueEpochTimeSec()).average().orElse(0.0);
+      return (getQueueAvr(managementQueue, currentEpochTimeSec) +
+          getQueueAvr(prioritizedQueue, currentEpochTimeSec) +
+          getQueueAvr(normalQueue, currentEpochTimeSec) +
+          getQueueAvr(vipQueue, currentEpochTimeSec)) / 4.0;
 
     } finally {
       readLock.unlock();
     }
   }
 
+  private double getQueueAvr(OrderQueueBase queue, long currentEpochTimeSec) {
+    return  StreamSupport.stream(queue.getOrderPriorityQueue().spliterator(), false)
+        .mapToDouble(value -> currentEpochTimeSec - value.getEnqueueEpochTimeSec()).average().orElse(0.0);
+  }
+
+  private MaxIterableAdapter<QueueData> getIterableAdapter() {
+    return new MaxIterableAdapter<>(
+        (o1, o2) -> o2.getEnqueueEpochTimeSec() - o1.getEnqueueEpochTimeSec(),
+        Arrays.asList(
+            managementQueue.getOrderPriorityQueue().iterator(),
+            prioritizedQueue.getOrderPriorityQueue().iterator(),
+            vipQueue.getOrderPriorityQueue().iterator(),
+            normalQueue.getOrderPriorityQueue().iterator()
+        ));
+  }
 
 }

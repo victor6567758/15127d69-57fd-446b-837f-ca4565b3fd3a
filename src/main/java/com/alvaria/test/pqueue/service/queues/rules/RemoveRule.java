@@ -5,12 +5,12 @@ public interface RemoveRule {
 
   boolean removeHelper(long id);
 
-  default RemoveRule appendNextRemove(RemoveRule removeRule) {
+  default RemoveRule appendNextRemoveRule(RemoveRule removeRule) {
     return id -> {
       if (!removeHelper(id)) {
         return removeRule.removeHelper(id);
       }
-      return false;
+      return true;
     };
   }
 }

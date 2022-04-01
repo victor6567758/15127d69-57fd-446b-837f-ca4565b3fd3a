@@ -1,6 +1,8 @@
 package com.alvaria.test.pqueue.controller;
 
-import com.alvaria.test.pqueue.service.QueueService;
+import com.alvaria.test.pqueue.model.QueueData;
+import com.alvaria.test.pqueue.service.GlobalPriorityQueueService;
+import com.alvaria.test.pqueue.util.Util;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -10,29 +12,29 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController()
 public class QueueControllerImpl implements QueueController {
 
-  private final QueueService queueService;
+  private final GlobalPriorityQueueService globalPriorityQueue;
 
-  public void createNewOrder(long id, LocalDateTime createTime) {
-    queueService.createNewOrder(id, createTime);
+  public void enqueueOrder(long id, LocalDateTime createTime) {
+    globalPriorityQueue.enqueue(new QueueData(Util.getSeconds(createTime), id));
   }
 
-  public long pollOrder() {
-    return queueService.pollOrder();
+  public QueueData dequeueOrder() {
+    return globalPriorityQueue.dequeue();
   }
 
-  public List<Long> listOrders() {
-    return queueService.listOrders();
+  public List<Long> getIdListSortedByPriority() {
+    return globalPriorityQueue.getIdListSortedByPriority();
   }
 
-  public void removeOrder(long id) {
-    queueService.removeOrder(id);
+  public void remove(long id) {
+    globalPriorityQueue.remove(id);
   }
 
-  public long getOrderPosition(long id) {
-    return queueService.getOrderPosition(id);
+  public long getPosition(long id) {
+    return globalPriorityQueue.getPosition(id);
   }
 
   public double getAverageWaitTime(LocalDateTime currentTime) {
-    return queueService.getAverageWaitTime(currentTime);
+    return globalPriorityQueue.getAverageWaitTime(Util.getSeconds(currentTime));
   }
 }

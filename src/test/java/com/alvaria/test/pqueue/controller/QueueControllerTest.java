@@ -4,10 +4,11 @@ package com.alvaria.test.pqueue.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.BDDMockito.willThrow;
 
-import com.alvaria.test.pqueue.service.QueueService;
+import com.alvaria.test.pqueue.model.QueueData;
+import com.alvaria.test.pqueue.service.GlobalPriorityQueueService;
 import com.alvaria.test.pqueue.util.Const;
+import com.alvaria.test.pqueue.util.Util;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -25,7 +26,7 @@ import org.springframework.http.ResponseEntity;
 class QueueControllerTest {
 
   @MockBean
-  private QueueService queueService;
+  private GlobalPriorityQueueService queueService;
 
   @Autowired
   private TestRestTemplate restTemplate;
@@ -33,7 +34,7 @@ class QueueControllerTest {
   @Test
   void vanillaListOrdersTest() {
 
-    given(queueService.listOrders()).willReturn(Collections.emptyList());
+    given(queueService.getIdListSortedByPriority()).willReturn(Collections.emptyList());
 
     ResponseEntity<List> response = restTemplate.getForEntity("/api/", List.class);
 
@@ -46,7 +47,7 @@ class QueueControllerTest {
 
     LocalDateTime now = LocalDateTime.now();
     String stringNow = now.format(DateTimeFormatter.ofPattern(Const.REST_DATETIME_FORMAT));
-    willDoNothing().given(queueService).createNewOrder(1L, now);
+    willDoNothing().given(queueService).enqueue(new QueueData(Util.getSeconds(now), 1L));
 
     ResponseEntity<Void> response = restTemplate.postForEntity("/api/1/" + stringNow, null, Void.class);
 
@@ -56,7 +57,7 @@ class QueueControllerTest {
   @Test
   void createNewOrderInvalidDate() {
 
-    willDoNothing().given(queueService).createNewOrder(1L, LocalDateTime.now());
+    willDoNothing().given(queueService).enqueue(new QueueData(Util.getSeconds(LocalDateTime.now()), 1L));
 
     ResponseEntity<Void> response = restTemplate.postForEntity("/api/1/dummy_date", null, Void.class);
 

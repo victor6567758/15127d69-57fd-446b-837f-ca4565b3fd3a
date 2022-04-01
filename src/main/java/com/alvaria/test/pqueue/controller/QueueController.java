@@ -1,5 +1,6 @@
 package com.alvaria.test.pqueue.controller;
 
+import com.alvaria.test.pqueue.model.QueueData;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.validation.constraints.Min;
@@ -17,21 +18,21 @@ import org.springframework.validation.annotation.Validated;
 public interface QueueController {
 
   @PostMapping("/{id}/{createTime}")
-  void createNewOrder(
+  void enqueueOrder(
       @PathVariable("id") @Min(1) long id,
       @DateTimeFormat(pattern = "ddMMyyyy_HHmmss") @PathVariable("createTime") LocalDateTime createTime);
 
   @GetMapping("/top")
-  long pollOrder();
+  QueueData dequeueOrder();
 
   @GetMapping("/")
-  List<Long> listOrders();
+  List<Long> getIdListSortedByPriority();
 
   @DeleteMapping("/{id}")
-  void removeOrder(@PathParam("id") long id);
+  void remove(@PathParam("id") long id);
 
   @GetMapping("/position/{id}")
-  long getOrderPosition(@PathVariable("id") @Min(1) long id);
+  long getPosition(@PathVariable("id") @Min(1) long id);
 
   @GetMapping("/avrwait/{currentTime}")
   double getAverageWaitTime(

@@ -6,13 +6,11 @@ public interface OrderPriorityQueue extends Iterable<QueueData> {
 
   void enqueue(QueueData queueData);
 
-  QueueData dequeue();
-
-  QueueData poll();
-
-  int getPosition(long id);
-
   QueueData remove(long id);
+
+  QueueData removeFirst();
+
+  QueueData peekFirst();
 
   boolean isEmpty();
 

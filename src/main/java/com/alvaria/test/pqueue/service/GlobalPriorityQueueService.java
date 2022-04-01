@@ -3,17 +3,17 @@ package com.alvaria.test.pqueue.service;
 import com.alvaria.test.pqueue.model.QueueData;
 import java.util.List;
 
-public interface GlobalPriorityQueue {
+public interface GlobalPriorityQueueService {
   void enqueue(QueueData queueData);
 
   QueueData dequeue();
 
-  List<QueueData> getList();
+  List<Long> getIdListSortedByPriority();
 
   void remove(long id);
 
   int getPosition(long id);
 
-  double avrSeqWaitTime(long currentEpochTimeSec);
+  double getAverageWaitTime(long currentEpochTimeSec);
 
 }

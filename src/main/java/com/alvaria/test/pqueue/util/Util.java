@@ -7,6 +7,10 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Util {
   public static int getCurrentSeconds() {
-    return (int) LocalDateTime.now().atZone(ZoneId.systemDefault()).toEpochSecond();
+    return getSeconds(LocalDateTime.now());
+  }
+
+  public static int getSeconds(LocalDateTime localDateTime) {
+    return (int) localDateTime.atZone(ZoneId.systemDefault()).toEpochSecond();
   }
 }

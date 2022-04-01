@@ -1,17 +1,17 @@
 package com.alvaria.test.pqueue.util.pqueue;
 
 import com.alvaria.test.pqueue.model.QueueData;
-import com.alvaria.test.pqueue.util.augmenttree.AugmentedTreeList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeSet;
 
 public class OrderPriorityQueueImpl implements OrderPriorityQueue {
 
   private final Map<Long, QueueData> idDataMap = new HashMap<>();
 
-  private final AugmentedTreeList<QueueData> orderPriorityTree = new AugmentedTreeList<>(
+  private final TreeSet<QueueData> orderPriorityTree = new TreeSet<>(
       Comparator.comparing(QueueData::getEnqueueEpochTimeSec)
           .reversed().thenComparingLong(QueueData::getId));
 
@@ -21,27 +21,37 @@ public class OrderPriorityQueueImpl implements OrderPriorityQueue {
 
   @Override
   public void enqueue(QueueData queueData) {
+
+    if (queueData == null || queueData.getEnqueueEpochTimeSec() < 0 || queueData.getId() < 1) {
+      throw new IllegalArgumentException("Invalid input data");
+    }
+
     QueueData prevQueueData = idDataMap.putIfAbsent(queueData.getId(), queueData);
     if (prevQueueData != null) {
       throw new IllegalArgumentException("ID already exists: " + queueData.getId());
     }
 
-    orderPriorityTree.enqueue(queueData);
+    orderPriorityTree.add(queueData);
   }
 
   @Override
-  public QueueData dequeue() {
+  public QueueData removeFirst() {
+    if (orderPriorityTree.isEmpty()) {
+      throw new IllegalArgumentException("Queue is empty");
+    }
 
-    QueueData removed = orderPriorityTree.dequeue();
-    idDataMap.remove(removed.getId());
-
-    return removed;
+    QueueData top = orderPriorityTree.pollFirst();
+    return idDataMap.remove(top.getId());
   }
 
   @Override
-  public QueueData poll() {
-    return orderPriorityTree.poll();
+  public QueueData peekFirst() {
+    if (!orderPriorityTree.isEmpty()) {
+      return orderPriorityTree.first();
+    }
+    return null;
   }
+
 
   @Override
   public QueueData remove(long id) {
@@ -52,17 +62,6 @@ public class OrderPriorityQueueImpl implements OrderPriorityQueue {
 
     orderPriorityTree.remove(queueData);
     return queueData;
-  }
-
-
-  @Override
-  public int getPosition(long id) {
-    QueueData queueData = idDataMap.get(id);
-    if (queueData == null) {
-      return -1;
-    }
-
-    return orderPriorityTree.getItemRank(queueData);
   }
 
   @Override
