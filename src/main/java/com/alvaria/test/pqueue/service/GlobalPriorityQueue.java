@@ -1,21 +1,18 @@
-package com.alvaria.test.pqueue.util.pqueue;
+package com.alvaria.test.pqueue.service;
 
 import com.alvaria.test.pqueue.model.QueueData;
 import java.util.List;
 
-public interface PriorityQueue {
-
+public interface GlobalPriorityQueue {
   void enqueue(QueueData queueData);
 
   QueueData dequeue();
 
-  QueueData poll();
-
   List<QueueData> getList();
 
-  int getPosition(long id);
+  void remove(long id);
 
-  boolean isEmpty();
+  int getPosition(long id);
 
   double avrSeqWaitTime(long currentEpochTimeSec);
 

@@ -8,10 +8,7 @@ This endpoint should return the highest ranked ID and the time it was entered in
 first rank id then time
 
 
-    max(3; n log n)      max(4; 2n log n)     n
+https://github.com/btrekkie/RedBlackNode/blob/master/src/main/java/com/github/btrekkie/tree_list/TreeList.java
 
-0:  3                    4                    0
-1:  3                    4                    1
-2   3                    4                    2
-3   3.29                 6.59                 3
-4   5.54                 11.09                4
+
+https://tildesites.bowdoin.edu/~ltoma/teaching/cs231/fall09/Lectures/10-augmentedTrees/augtrees.pdf
