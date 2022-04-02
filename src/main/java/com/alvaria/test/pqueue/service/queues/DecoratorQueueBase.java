@@ -12,13 +12,11 @@ import org.apache.commons.lang3.tuple.Pair;
 
 @RequiredArgsConstructor
 @Getter
-public abstract class OrderQueueBase implements DequeueRule, EnqueueRule, RemoveRule {
+public abstract class DecoratorQueueBase implements DequeueRule, EnqueueRule, RemoveRule {
 
   protected final OrderPriorityQueue orderPriorityQueue;
 
-  protected double calculatePriority(QueueData probeData) {
-    return -1;
-  }
+  public abstract double calculatePriority(QueueData probeData);
 
   @Override
   public boolean removeHelper(long id) {

@@ -79,4 +79,10 @@ public class OrderPriorityQueueImpl implements OrderPriorityQueue {
   public Iterator<QueueData> iterator() {
     return orderPriorityTree.iterator();
   }
+
+  @Override
+  public void clear(){
+    idDataMap.clear();
+    orderPriorityTree.clear();
+  }
 }

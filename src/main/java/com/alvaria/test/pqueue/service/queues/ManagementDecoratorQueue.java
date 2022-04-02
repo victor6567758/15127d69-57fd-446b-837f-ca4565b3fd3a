@@ -3,13 +3,21 @@ package com.alvaria.test.pqueue.service.queues;
 import com.alvaria.test.pqueue.model.QueueData;
 import com.alvaria.test.pqueue.service.queues.rules.DequeueRule;
 import com.alvaria.test.pqueue.util.pqueue.OrderPriorityQueue;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class ManagementQueue extends OrderQueueBase {
+@Slf4j
+public class ManagementDecoratorQueue extends DecoratorQueueBase {
 
-  public ManagementQueue(OrderPriorityQueue orderPriorityQueue) {
+  public ManagementDecoratorQueue(OrderPriorityQueue orderPriorityQueue) {
     super(orderPriorityQueue);
+  }
+
+  @Override
+  public double calculatePriority(QueueData probeData) {
+    log.debug("Returned max priority as management queue");
+    return Double.MAX_VALUE;
   }
 
   @Override

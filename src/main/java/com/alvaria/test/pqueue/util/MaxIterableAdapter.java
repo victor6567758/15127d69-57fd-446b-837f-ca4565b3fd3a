@@ -7,24 +7,24 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import org.springframework.util.CollectionUtils;
 
 public class MaxIterableAdapter<T> implements Iterable<T> {
 
   private class MaxIterableAdapterIterator implements Iterator<T> {
 
-    private final List<Iterator<T>> source =
-        new ArrayList<>(MaxIterableAdapter.this.sourceIterators);
 
     private final List<T> curRowValues;
-    private final BitSet liveIteratorsBitSet = new BitSet(source.size());
+    private final BitSet liveIteratorsBitSet = new BitSet(MaxIterableAdapter.this.sourceIterators.size());
 
     private T nextVal;
 
 
     private MaxIterableAdapterIterator() {
-      curRowValues = new ArrayList<>(Collections.nCopies(source.size(), null));
-      liveIteratorsBitSet.set(0, source.size(), true);
+      curRowValues = new ArrayList<>(Collections.nCopies(MaxIterableAdapter.this.sourceIterators.size(), null));
+      liveIteratorsBitSet.set(0, MaxIterableAdapter.this.sourceIterators.size(), true);
     }
 
     @Override
@@ -53,8 +53,8 @@ public class MaxIterableAdapter<T> implements Iterable<T> {
       if (liveIteratorsBitSet.isEmpty()) {
         return null;
       }
-      if (liveIteratorsBitSet.get(idx) && source.get(idx).hasNext()) {
-        return source.get(idx).next();
+      if (liveIteratorsBitSet.get(idx) && MaxIterableAdapter.this.sourceIterators.get(idx).hasNext()) {
+        return MaxIterableAdapter.this.sourceIterators.get(idx).next();
       } else {
         liveIteratorsBitSet.set(idx, false);
         return null;
@@ -82,10 +82,12 @@ public class MaxIterableAdapter<T> implements Iterable<T> {
             continue;
           }
 
-          if (MaxIterableAdapter.this.comparator.compare(elem, maxElem) > 0) {
+          if (MaxIterableAdapter.this.priorityProviders.get(i).apply(elem) >
+            MaxIterableAdapter.this.priorityProviders.get(maxElemIdx).apply(maxElem)) {
             maxElem = elem;
             maxElemIdx = i;
           }
+
         }
       }
 
@@ -96,19 +98,24 @@ public class MaxIterableAdapter<T> implements Iterable<T> {
     }
   }
 
-  private final Comparator<T> comparator;
-  private final List<Iterator<T>> sourceIterators;
 
-  public MaxIterableAdapter(Comparator<T> comparator, List<Iterator<T>> sourceIterators) {
-    if (comparator == null) {
-      throw new IllegalArgumentException("Comparator must be provided");
+  private final List<Iterator<T>> sourceIterators;
+  private final List<Function<T, Double>>  priorityProviders;
+
+  public MaxIterableAdapter(List<Function<T, Double>> priorityProviders, List<Iterator<T>> sourceIterators) {
+    if (priorityProviders == null) {
+      throw new IllegalArgumentException("Priority supplier must be provided");
     }
-    this.comparator = comparator;
+    this.priorityProviders = priorityProviders;
 
     if (CollectionUtils.isEmpty(sourceIterators)) {
       throw new IllegalArgumentException("Invalid source iterators");
     }
     this.sourceIterators = sourceIterators;
+
+    if (sourceIterators.size() != priorityProviders.size()) {
+      throw new IllegalArgumentException("Source iterators and priority providers must be of the same size");
+    }
   }
 
   @Override

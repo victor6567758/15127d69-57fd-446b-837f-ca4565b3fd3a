@@ -15,15 +15,11 @@ class OrderPriorityQueueTest {
   @Test
   void enqueueVanillaTest() {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-
     int curEpochSec = Util.getCurrentSeconds();
-    QueueData queueData1 = new QueueData(curEpochSec + 1, 1L);
-    QueueData queueData2 = new QueueData(curEpochSec + 3, 2L);
-    QueueData queueData3 = new QueueData(curEpochSec - 1, 3L);
 
-    orderPriorityQueue.enqueue(queueData1);
-    orderPriorityQueue.enqueue(queueData2);
-    orderPriorityQueue.enqueue(queueData3);
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec + 1, 1L));
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec + 3, 2L));
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec - 1, 3L));
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
         .map(QueueData::getEnqueueEpochTimeSec).collect(Collectors.toList()))
@@ -48,8 +44,8 @@ class OrderPriorityQueueTest {
   @Test
   void enqueueDuplicateIdTest() {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-
     int curEpochSec = Util.getCurrentSeconds();
+
     QueueData queueData1 = new QueueData(curEpochSec + 1, 1L);
     QueueData queueData2 = new QueueData(curEpochSec + 3, 1L);
 
@@ -63,15 +59,11 @@ class OrderPriorityQueueTest {
   @Test
   void enqueueDuplicatePriorityTest() {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-
     int curEpochSec = Util.getCurrentSeconds();
-    QueueData queueData1 = new QueueData(curEpochSec, 1L);
-    QueueData queueData2 = new QueueData(curEpochSec, 2L);
-    QueueData queueData3 = new QueueData(curEpochSec, 3L);
 
-    orderPriorityQueue.enqueue(queueData1);
-    orderPriorityQueue.enqueue(queueData2);
-    orderPriorityQueue.enqueue(queueData3);
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec, 1L));
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec, 2L));
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec, 3L));
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
         .map(QueueData::getId).collect(Collectors.toList()))
@@ -82,16 +74,12 @@ class OrderPriorityQueueTest {
 
   @Test
   void removeFirstVanillaTest() {
-    int curEpochSec = Util.getCurrentSeconds();
-    QueueData queueData1 = new QueueData(curEpochSec + 1, 1L);
-    QueueData queueData2 = new QueueData(curEpochSec + 3, 2L);
-    QueueData queueData3 = new QueueData(curEpochSec - 1, 3L);
-
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
+    int curEpochSec = Util.getCurrentSeconds();
 
-    orderPriorityQueue.enqueue(queueData1);
-    orderPriorityQueue.enqueue(queueData2);
-    orderPriorityQueue.enqueue(queueData3);
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec + 1, 1L));
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec + 3, 2L));
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec - 1, 3L));
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
         .map(QueueData::getEnqueueEpochTimeSec).collect(Collectors.toList()))
@@ -108,15 +96,12 @@ class OrderPriorityQueueTest {
 
   @Test
   void peekFirstVanillaTest() {
-    int curEpochSec = Util.getCurrentSeconds();
-    QueueData queueData1 = new QueueData(curEpochSec + 1, 1L);
-    QueueData queueData2 = new QueueData(curEpochSec + 3, 2L);
-    QueueData queueData3 = new QueueData(curEpochSec - 1, 3L);
-
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-    orderPriorityQueue.enqueue(queueData1);
-    orderPriorityQueue.enqueue(queueData2);
-    orderPriorityQueue.enqueue(queueData3);
+    int curEpochSec = Util.getCurrentSeconds();
+
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec + 1, 1L));
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec + 3, 2L));
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec - 1, 3L));
 
     QueueData peekData = orderPriorityQueue.peekFirst();
     assertThat(peekData.getId()).isEqualTo(2L);
@@ -171,20 +156,28 @@ class OrderPriorityQueueTest {
 
   @Test
   void removeVanillaTest() {
-    int curEpochSec = Util.getCurrentSeconds();
-    QueueData queueData1 = new QueueData(curEpochSec + 1, 1L);
-    QueueData queueData2 = new QueueData(curEpochSec + 3, 2L);
-    QueueData queueData3 = new QueueData(curEpochSec - 1, 3L);
-
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-    orderPriorityQueue.enqueue(queueData1);
-    orderPriorityQueue.enqueue(queueData2);
-    orderPriorityQueue.enqueue(queueData3);
+    int curEpochSec = Util.getCurrentSeconds();
+
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec + 1, 1L));
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec + 3, 2L));
+    orderPriorityQueue.enqueue(new QueueData(curEpochSec - 1, 3L));
 
     orderPriorityQueue.remove(3L);
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
         .map(QueueData::getId).collect(Collectors.toList()))
         .containsExactlyInAnyOrder(1L, 2L);
 
+  }
+
+  @Test
+  void clearVanillaTest() {
+    OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
+    orderPriorityQueue.enqueue(new QueueData(Util.getCurrentSeconds(), 1L));
+
+    assertThat(orderPriorityQueue.isEmpty()).isFalse();
+    orderPriorityQueue.clear();
+
+    assertThat(orderPriorityQueue.isEmpty()).isTrue();
   }
 }
