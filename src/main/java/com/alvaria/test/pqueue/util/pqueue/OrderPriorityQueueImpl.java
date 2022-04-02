@@ -12,7 +12,7 @@ public class OrderPriorityQueueImpl implements OrderPriorityQueue {
   private final Map<Long, QueueData> idDataMap = new HashMap<>();
 
   private final TreeSet<QueueData> orderPriorityTree = new TreeSet<>(
-      Comparator.comparing(QueueData::getEnqueueEpochTimeSec)
+      Comparator.comparing(QueueData::getEnqueueTimeSec)
           .reversed().thenComparingLong(QueueData::getId));
 
   OrderPriorityQueueImpl() {
@@ -22,7 +22,7 @@ public class OrderPriorityQueueImpl implements OrderPriorityQueue {
   @Override
   public void enqueue(QueueData queueData) {
 
-    if (queueData == null || queueData.getEnqueueEpochTimeSec() < 0 || queueData.getId() < 1) {
+    if (queueData == null || queueData.getEnqueueTimeSec() < 0 || queueData.getId() < 1) {
       throw new IllegalArgumentException("Invalid input data");
     }
 
@@ -81,7 +81,7 @@ public class OrderPriorityQueueImpl implements OrderPriorityQueue {
   }
 
   @Override
-  public void clear(){
+  public void clear() {
     idDataMap.clear();
     orderPriorityTree.clear();
   }

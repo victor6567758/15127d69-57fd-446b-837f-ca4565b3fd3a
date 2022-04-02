@@ -3,12 +3,10 @@ package com.alvaria.test.pqueue.util;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import org.springframework.util.CollectionUtils;
 
 public class MaxIterableAdapter<T> implements Iterable<T> {
@@ -83,7 +81,7 @@ public class MaxIterableAdapter<T> implements Iterable<T> {
           }
 
           if (MaxIterableAdapter.this.priorityProviders.get(i).apply(elem) >
-            MaxIterableAdapter.this.priorityProviders.get(maxElemIdx).apply(maxElem)) {
+              MaxIterableAdapter.this.priorityProviders.get(maxElemIdx).apply(maxElem)) {
             maxElem = elem;
             maxElemIdx = i;
           }
@@ -100,7 +98,7 @@ public class MaxIterableAdapter<T> implements Iterable<T> {
 
 
   private final List<Iterator<T>> sourceIterators;
-  private final List<Function<T, Double>>  priorityProviders;
+  private final List<Function<T, Double>> priorityProviders;
 
   public MaxIterableAdapter(List<Function<T, Double>> priorityProviders, List<Iterator<T>> sourceIterators) {
     if (priorityProviders == null) {

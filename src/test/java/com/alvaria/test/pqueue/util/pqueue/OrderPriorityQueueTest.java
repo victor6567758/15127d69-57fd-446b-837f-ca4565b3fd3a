@@ -22,7 +22,7 @@ class OrderPriorityQueueTest {
     orderPriorityQueue.enqueue(new QueueData(curEpochSec - 1, 3L));
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
-        .map(QueueData::getEnqueueEpochTimeSec).collect(Collectors.toList()))
+        .map(QueueData::getEnqueueTimeSec).collect(Collectors.toList()))
         .containsExactly(curEpochSec + 3, curEpochSec + 1, curEpochSec - 1);
 
   }
@@ -82,15 +82,15 @@ class OrderPriorityQueueTest {
     orderPriorityQueue.enqueue(new QueueData(curEpochSec - 1, 3L));
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
-        .map(QueueData::getEnqueueEpochTimeSec).collect(Collectors.toList()))
+        .map(QueueData::getEnqueueTimeSec).collect(Collectors.toList()))
         .hasSize(3);
 
     QueueData removedData = orderPriorityQueue.removeFirst();
     assertThat(removedData.getId()).isEqualTo(2L);
-    assertThat(removedData.getEnqueueEpochTimeSec()).isEqualTo(curEpochSec + 3);
+    assertThat(removedData.getEnqueueTimeSec()).isEqualTo(curEpochSec + 3);
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
-        .map(QueueData::getEnqueueEpochTimeSec).collect(Collectors.toList()))
+        .map(QueueData::getEnqueueTimeSec).collect(Collectors.toList()))
         .containsExactly(curEpochSec + 1, curEpochSec - 1);
   }
 
@@ -105,10 +105,10 @@ class OrderPriorityQueueTest {
 
     QueueData peekData = orderPriorityQueue.peekFirst();
     assertThat(peekData.getId()).isEqualTo(2L);
-    assertThat(peekData.getEnqueueEpochTimeSec()).isEqualTo(curEpochSec + 3);
+    assertThat(peekData.getEnqueueTimeSec()).isEqualTo(curEpochSec + 3);
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
-        .map(QueueData::getEnqueueEpochTimeSec).collect(Collectors.toList()))
+        .map(QueueData::getEnqueueTimeSec).collect(Collectors.toList()))
         .containsExactly(curEpochSec + 3, curEpochSec + 1, curEpochSec - 1);
   }
 
@@ -134,13 +134,13 @@ class OrderPriorityQueueTest {
     orderPriorityQueue.enqueue(new QueueData(Util.getCurrentSeconds(), 1L));
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
-        .map(QueueData::getEnqueueEpochTimeSec).collect(Collectors.toList()))
+        .map(QueueData::getEnqueueTimeSec).collect(Collectors.toList()))
         .hasSize(1);
 
     orderPriorityQueue.removeFirst();
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
-        .map(QueueData::getEnqueueEpochTimeSec).collect(Collectors.toList()))
+        .map(QueueData::getEnqueueTimeSec).collect(Collectors.toList()))
         .isEmpty();
   }
 
