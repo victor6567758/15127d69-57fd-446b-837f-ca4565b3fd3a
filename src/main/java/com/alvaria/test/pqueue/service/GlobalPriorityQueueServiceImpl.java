@@ -8,7 +8,6 @@ import com.alvaria.test.pqueue.util.pqueue.OrderPriorityQueue;
 import com.alvaria.test.pqueue.util.pqueue.OrderPriorityQueueFactory;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -177,8 +176,6 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
     );
 
   }
-
-
 
 
 }

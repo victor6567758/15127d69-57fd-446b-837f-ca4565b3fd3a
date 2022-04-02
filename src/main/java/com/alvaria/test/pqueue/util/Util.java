@@ -1,12 +1,12 @@
 package com.alvaria.test.pqueue.util;
 
-import com.alvaria.test.pqueue.model.QueueType;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class Util {
+
   public static int getCurrentSeconds() {
     return getSeconds(LocalDateTime.now());
   }
