@@ -25,3 +25,5 @@ mvn clean test -P integration-test
 mvn dockerfile:build
 
 mvn spring-boot:run
+
+http://localhost:8080/v2/api-docs

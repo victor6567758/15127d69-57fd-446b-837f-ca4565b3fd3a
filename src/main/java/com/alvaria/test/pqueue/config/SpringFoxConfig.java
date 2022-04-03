@@ -12,9 +12,11 @@ import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
-@Profile({"local", "!test", "!integration-test"})
+@Profile({"!integration-test && !test && !prod && local"})
+@EnableSwagger2
 public class SpringFoxConfig {
 
   @Bean
@@ -33,7 +35,7 @@ public class SpringFoxConfig {
         .title("Priority Queue Assignment")
         .description("Priority Queue Assignment API")
         .version("1.0")
-        .contact(new Contact("Victor Zoubok", "www.google.com", "victorofff@gmail.com"))
+        .contact(new Contact("Victor Zoubok", "dummy", "victorofff@gmail.com"))
         .build();
   }
 
