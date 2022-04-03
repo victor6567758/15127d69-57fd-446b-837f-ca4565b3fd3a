@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.6.5</version>
+		<version>2.5.7</version>
 		<relativePath/>
 	</parent>
 
@@ -22,6 +22,7 @@
 		<commons-collections4-ver>4.4</commons-collections4-ver>
 		<testcontainers-ver>1.16.3</testcontainers-ver>
 		<actuator-ver>2.6.6</actuator-ver>
+		<spring-fox-ver>3.0.0</spring-fox-ver>
 	</properties>
 
 
@@ -72,6 +73,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-boot-starter</artifactId>
+			<version>${spring-fox-ver}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
@@ -82,6 +89,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
