@@ -33,7 +33,7 @@ public class SpringFoxConfig {
         .title("Priority Queue Assignment")
         .description("Priority Queue Assignment API")
         .version("1.0")
-        .contact(new Contact("Vctor Zoubok", "www.google.com", "victorofff@gmail.com"))
+        .contact(new Contact("Victor Zoubok", "www.google.com", "victorofff@gmail.com"))
         .build();
   }
 
