@@ -40,6 +40,12 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
 
 
   @Override
+  public int getStartEpochSec() {
+    return startSec;
+  }
+
+
+  @Override
   public void enqueue(QueueData queueData) {
 
     writeLock.lock();
@@ -69,24 +75,19 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
     try {
 
       if (!queues[QueueType.MANAGEMENT.getIdx()].isEmpty()) {
-        return queues[QueueType.MANAGEMENT.getIdx()].removeFirst();
+        QueueData dequeuedData = queues[QueueType.MANAGEMENT.getIdx()].removeFirst();
+        log.info("Dequeued {}", dequeuedData);
+
+        return dequeuedData;
       } else {
 
-        double priority = -1.0;
-        QueueType priorityType = QueueType.DUMMY;
-        for (QueueType queueType : SECOND_PRIORITY_QUEUES) {
-
-          QueueData peeked = queues[queueType.getIdx()].isEmpty() ? null : queues[queueType.getIdx()].peekFirst();
-          if (peeked != null) {
-            double newPriority = QueueData.getPriority(queueType, peeked.getEnqueueTimeSec() - startSec);
-            if (priority > newPriority) {
-              priorityType = queueType;
-            }
-          }
-        }
+        QueueType priorityType = getQueueTypeWithMaxPriority();
 
         if (priorityType != QueueType.DUMMY) {
-          return queues[priorityType.getIdx()].removeFirst();
+          QueueData dequeuedData =  queues[priorityType.getIdx()].removeFirst();
+          log.info("Dequeued {}", dequeuedData);
+
+          return dequeuedData;
         }
 
       }
@@ -104,6 +105,7 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
     try {
       for (QueueType queueType : ALL_PRIORITY_QUEUES) {
         if (!queues[queueType.getIdx()].isEmpty() && queues[queueType.getIdx()].remove(id) != null) {
+          log.info("Removed data with id {}", id);
           return;
         }
       }
@@ -136,6 +138,7 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
       StreamSupport.stream(getIterableAdapter().spliterator(), false)
           .takeWhile(queueData -> queueData.getId() != id).forEach(elem -> sequenceNum[0]++);
 
+      log.info("Fond position for data with {}: {}", id, sequenceNum[0]);
       return sequenceNum[0];
     } finally {
       readLock.unlock();
@@ -147,9 +150,8 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
   public double getAverageWaitTime(long currentEpochTimeSec) {
     readLock.lock();
     try {
-
       return Arrays.stream(queues).flatMap(queue -> StreamSupport.stream(queue.spliterator(), false))
-          .mapToDouble(value -> value.getEnqueueTimeSec() - startSec).average().orElse(-1.0);
+          .mapToDouble(value -> value.getEnqueueTimeSec() - currentEpochTimeSec).average().orElse(-1.0);
 
     } finally {
       readLock.unlock();
@@ -164,6 +166,22 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
     } finally {
       writeLock.unlock();
     }
+  }
+
+  private QueueType getQueueTypeWithMaxPriority() {
+    double priority = -1.0;
+    QueueType priorityType = QueueType.DUMMY;
+    for (QueueType queueType : SECOND_PRIORITY_QUEUES) {
+
+      QueueData peeked = queues[queueType.getIdx()].isEmpty() ? null : queues[queueType.getIdx()].peekFirst();
+      if (peeked != null) {
+        double newPriority = QueueData.getPriority(queueType, peeked.getEnqueueTimeSec() - startSec);
+        if (priority > newPriority) {
+          priorityType = queueType;
+        }
+      }
+    }
+    return priorityType;
   }
 
 

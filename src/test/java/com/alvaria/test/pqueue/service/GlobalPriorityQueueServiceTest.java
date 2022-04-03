@@ -4,10 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.alvaria.test.pqueue.model.QueueData;
 import com.alvaria.test.pqueue.model.QueueType;
+import com.alvaria.test.pqueue.util.TestConst;
 import com.alvaria.test.pqueue.util.Util;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -17,9 +16,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 
 @SpringBootTest
+@ActiveProfiles("test")
 class GlobalPriorityQueueServiceTest {
 
   @Autowired
@@ -55,10 +56,18 @@ class GlobalPriorityQueueServiceTest {
   }
 
   @Test
-  void createNewOrderInvalidIdTest() {
+  void enqueueInvalidIdTest() {
 
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
       globalPriorityQueue.enqueue(new QueueData(Util.getCurrentSeconds(), 0L));
+    });
+  }
+
+  @Test
+  void enqueueInvalidTimeTest() {
+
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      globalPriorityQueue.enqueue(new QueueData(globalPriorityQueue.getStartEpochSec() - 1, 0L));
     });
   }
 
@@ -212,12 +221,10 @@ class GlobalPriorityQueueServiceTest {
     Pair<QueueData, Double> pair3 = new ImmutablePair<>(queueData3,
         QueueData.getPriority(QueueType.NORMAL, queueData3.getEnqueueTimeSec() - curEpochSec));
 
-
     QueueData queueData4 = new QueueData(curEpochSec + 40, 3);
     assertThat(QueueData.getOrderType(queueData4)).isEqualTo(QueueType.PRIORITY);
     Pair<QueueData, Double> pair4 = new ImmutablePair<>(queueData4,
         QueueData.getPriority(QueueType.PRIORITY, queueData4.getEnqueueTimeSec() - curEpochSec));
-
 
     List<Pair<QueueData, Double>> pairs = Stream.of(pair1, pair2, pair3, pair4)
         .sorted((o1, o2) -> o2.getRight().compareTo(o1.getRight())).collect(Collectors.toList());
@@ -256,12 +263,19 @@ class GlobalPriorityQueueServiceTest {
     List<Pair<QueueData, Double>> pairs = Stream.of(pair1, pair2, pair3)
         .sorted((o1, o2) -> o2.getRight().compareTo(o1.getRight())).collect(Collectors.toList());
 
+    pairs.forEach(data -> globalPriorityQueue.enqueue(data.getLeft()));
     double avrExpected = pairs.stream().map(elem -> elem.getLeft().getEnqueueTimeSec() - curEpochSec)
         .mapToInt(value -> value).average().orElse(-1.0);
 
     double avrResult = globalPriorityQueue.getAverageWaitTime(curEpochSec);
-    assertThat(avrExpected).isEqualTo(avrResult);
+    assertThat(avrExpected).isCloseTo(avrResult, TestConst.TEST_DOUBLE_OFFSET);
 
+  }
+
+  @Test
+  void testAverageOverEmptyQueueTest() {
+    double avrExpected = globalPriorityQueue.getAverageWaitTime(Util.getCurrentSeconds());
+    assertThat(avrExpected).isCloseTo(-1.0, TestConst.TEST_DOUBLE_OFFSET);
   }
 
 }

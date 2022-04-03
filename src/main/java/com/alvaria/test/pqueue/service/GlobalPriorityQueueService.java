@@ -18,5 +18,7 @@ public interface GlobalPriorityQueueService {
 
   void clear();
 
+  int getStartEpochSec();
+
 
 }

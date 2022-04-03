@@ -12,3 +12,16 @@ https://github.com/btrekkie/RedBlackNode/blob/master/src/main/java/com/github/bt
 
 
 https://tildesites.bowdoin.edu/~ltoma/teaching/cs231/fall09/Lectures/10-augmentedTrees/augtrees.pdf
+
+
+java -jar -Dspring.profiles.active=local target/pqueue.jar
+
+mvn spring-boot:run -Dspring-boot.run.profiles=local
+
+mvn spring-boot:run -Dspring-boot.run.profiles=local
+
+mvn clean test -P integration-test
+
+mvn dockerfile:build
+
+mvn spring-boot:run

@@ -8,14 +8,25 @@
 		<version>2.6.5</version>
 		<relativePath/>
 	</parent>
+
 	<groupId>com.alvaria.test</groupId>
 	<artifactId>pqueue</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>pqueue</name>
-	<description>Demo project for Spring Boot</description>
+
+	<description>Alvaria Test</description>
+
 	<properties>
 		<java.version>11</java.version>
+		<commons-lang3-ver>3.12.0</commons-lang3-ver>
+		<commons-collections4-ver>4.4</commons-collections4-ver>
+		<testcontainers-ver>1.16.3</testcontainers-ver>
+		<actuator-ver>2.6.6</actuator-ver>
 	</properties>
+
+
+
+
 	<dependencies>
 
 		<dependency>
@@ -31,21 +42,14 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.12.0</version>
+			<version>${commons-lang3-ver}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
-			<version>4.4</version>
+			<version>${commons-collections4-ver}</version>
 		</dependency>
-
-
-		<!--		<dependency>-->
-<!--			<groupId>com.google.guava</groupId>-->
-<!--			<artifactId>guava</artifactId>-->
-<!--			<version>31.1-jre</version>-->
-<!--		</dependency>-->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -53,6 +57,13 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+			<version>${actuator-ver}</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -84,6 +95,20 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
+			<version>${testcontainers-ver}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>${testcontainers-ver}</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -92,6 +117,17 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<mainClass>com.alvaria.test.pqueue.PQueueApplication</mainClass>
+							<finalName>pqueue</finalName>
+						</configuration>
+					</execution>
+				</executions>
 				<configuration>
 					<excludes>
 						<exclude>
@@ -148,5 +184,28 @@
 
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>integration-test</id>
+			<build>
+				<plugins>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<version>3.0.0-M5</version>
+						<configuration>
+							<includes>
+								<include>**/*IT*.java</include>
+							</includes>
+						</configuration>
+					</plugin>
+
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 
 </project>

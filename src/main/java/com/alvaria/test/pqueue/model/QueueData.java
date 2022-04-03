@@ -9,6 +9,11 @@ public class QueueData {
   private final long id;
 
   public static double getPriority(QueueType queueType, int secs) {
+
+    if (secs < 0) {
+      throw new IllegalArgumentException("Invalid number of seconds for queued data");
+    }
+
     switch (queueType) {
       case VIP:
         return Math.max(4.0, 2.0 * secs * Math.log(secs));
