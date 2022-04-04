@@ -92,6 +92,7 @@ public class MaxIterableAdapter<T> implements Iterable<T> {
       if (maxElem != null) {
         curRowValues.set(maxElemIdx, readFromIterator(maxElemIdx));
       }
+
       return maxElem;
     }
   }

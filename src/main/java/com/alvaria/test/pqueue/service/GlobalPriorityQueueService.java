@@ -6,19 +6,16 @@ import java.util.List;
 public interface GlobalPriorityQueueService {
   void enqueue(QueueData queueData);
 
-  QueueData dequeue();
+  QueueData dequeue(int curTimeEpochSec);
 
-  List<Long> getIdListSortedByPriority();
+  List<Long> getIdListSortedByPriority(int curTimeEpochSec);
 
   void remove(long id);
 
-  int getPosition(long id);
+  int getPosition(long id, int curTimeEpochSec);
 
-  double getAverageWaitTime(int currentEpochTimeSec);
+  double getAverageWaitTime(int curTimeEpochSec);
 
   void clear();
-
-  int getStartEpochSec();
-
 
 }

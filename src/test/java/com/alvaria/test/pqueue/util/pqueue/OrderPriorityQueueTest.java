@@ -23,7 +23,7 @@ class OrderPriorityQueueTest {
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
         .map(QueueData::getEnqueueTimeSec).collect(Collectors.toList()))
-        .containsExactly(curEpochSec + 3, curEpochSec + 1, curEpochSec - 1);
+        .containsExactly(curEpochSec - 1, curEpochSec + 1, curEpochSec + 3);
 
   }
 
@@ -86,12 +86,12 @@ class OrderPriorityQueueTest {
         .hasSize(3);
 
     QueueData removedData = orderPriorityQueue.removeFirst();
-    assertThat(removedData.getId()).isEqualTo(2L);
-    assertThat(removedData.getEnqueueTimeSec()).isEqualTo(curEpochSec + 3);
+    assertThat(removedData.getId()).isEqualTo(3L);
+    assertThat(removedData.getEnqueueTimeSec()).isEqualTo(curEpochSec - 1);
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
         .map(QueueData::getEnqueueTimeSec).collect(Collectors.toList()))
-        .containsExactly(curEpochSec + 1, curEpochSec - 1);
+        .containsExactly(curEpochSec + 1, curEpochSec + 3);
   }
 
   @Test
@@ -104,12 +104,12 @@ class OrderPriorityQueueTest {
     orderPriorityQueue.enqueue(new QueueData(curEpochSec - 1, 3L));
 
     QueueData peekData = orderPriorityQueue.peekFirst();
-    assertThat(peekData.getId()).isEqualTo(2L);
-    assertThat(peekData.getEnqueueTimeSec()).isEqualTo(curEpochSec + 3);
+    assertThat(peekData.getId()).isEqualTo(3L);
+    assertThat(peekData.getEnqueueTimeSec()).isEqualTo(curEpochSec - 1);
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
         .map(QueueData::getEnqueueTimeSec).collect(Collectors.toList()))
-        .containsExactly(curEpochSec + 3, curEpochSec + 1, curEpochSec - 1);
+        .containsExactly(curEpochSec - 1, curEpochSec + 1, curEpochSec + 3);
   }
 
   @Test

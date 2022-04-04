@@ -16,11 +16,11 @@ public class QueueData {
 
     switch (queueType) {
       case VIP:
-        return Math.max(4.0, 2.0 * secs * Math.log(secs));
+        return secs > 0 ? Math.max(4.0, 2.0 * secs * Math.log(secs)) : 4.0;
       case NORMAL:
         return secs;
       case PRIORITY:
-        return Math.max(3.0, secs * Math.log(secs));
+        return secs > 0 ? Math.max(3.0, secs * Math.log(secs)) : 3.0;
       case MANAGEMENT:
         return Double.MAX_VALUE;
       default:

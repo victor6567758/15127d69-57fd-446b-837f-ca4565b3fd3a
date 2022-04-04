@@ -12,8 +12,7 @@ public class OrderPriorityQueueImpl implements OrderPriorityQueue {
   private final Map<Long, QueueData> idDataMap = new HashMap<>();
 
   private final TreeSet<QueueData> orderPriorityTree = new TreeSet<>(
-      Comparator.comparing(QueueData::getEnqueueTimeSec)
-          .reversed().thenComparingLong(QueueData::getId));
+      Comparator.comparing(QueueData::getEnqueueTimeSec).thenComparingLong(QueueData::getId));
 
   OrderPriorityQueueImpl() {
   }

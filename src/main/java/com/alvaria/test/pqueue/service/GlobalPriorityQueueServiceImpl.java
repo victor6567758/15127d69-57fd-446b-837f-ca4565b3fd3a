@@ -39,11 +39,7 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
 
   private final int startSec = Util.getNowCurrentEpochSeconds();
 
-
-  @Override
-  public int getStartEpochSec() {
-    return startSec;
-  }
+  private int maxEnqueueTime = -1;
 
 
   @Override
@@ -63,6 +59,8 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
       QueueCategory queueType = QueueData.getOrderCategory(queueData);
       queues[queueType.getIdx()].enqueue(queueData);
 
+      maxEnqueueTime = Math.max(maxEnqueueTime, queueData.getEnqueueTimeSec());
+
       log.debug("Enqueued: {}", queueData);
 
     } finally {
@@ -71,7 +69,7 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
   }
 
   @Override
-  public QueueData dequeue() {
+  public QueueData dequeue(int curTimeEpochSec) {
     writeLock.lock();
     try {
 
@@ -82,7 +80,7 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
         return dequeuedData;
       } else {
 
-        QueueCategory priorityType = getQueueCategoryWithMaxPriority();
+        QueueCategory priorityType = getQueueCategoryWithMaxPriority(curTimeEpochSec);
 
         if (priorityType != QueueCategory.DUMMY) {
           QueueData dequeuedData = queues[priorityType.getIdx()].removeFirst();
@@ -90,7 +88,7 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
           if (log.isDebugEnabled()) {
             QueueCategory queueCategory = QueueData.getOrderCategory(dequeuedData);
             double priorityDequeued =
-                QueueData.getPriority(queueCategory, dequeuedData.getEnqueueTimeSec() - startSec);
+                QueueData.getPriority(queueCategory, curTimeEpochSec - dequeuedData.getEnqueueTimeSec());
 
             log.debug("Dequeued: {}, priority: {}, category: {}", dequeuedData,
                 priorityDequeued, queueCategory);
@@ -124,7 +122,9 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
   }
 
   @Override
-  public List<Long> getIdListSortedByPriority() {
+  public List<Long> getIdListSortedByPriority(int curTimeEpochSec) {
+    checkRequestTime(curTimeEpochSec);
+
     readLock.lock();
     try {
 
@@ -138,7 +138,7 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
             .forEach(result::add);
       }
 
-      StreamSupport.stream(getNonManIterableAdapter().spliterator(), false)
+      StreamSupport.stream(getNonManIterableAdapter(curTimeEpochSec).spliterator(), false)
           .map(QueueData::getId)
           .forEach(result::add);
 
@@ -151,7 +151,9 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
   }
 
   @Override
-  public int getPosition(long id) {
+  public int getPosition(long id, int curTimeEpochSec) {
+    checkRequestTime(curTimeEpochSec);
+
     readLock.lock();
     try {
 
@@ -166,7 +168,8 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
         return result;
       }
 
-      result = managementQueue.size() + getRankPositionInQueue(getNonManIterableAdapter(), id);
+      result = managementQueue.size() +
+          getRankPositionInQueue(getNonManIterableAdapter(curTimeEpochSec), id);
 
       if (result < 0) {
         throw new IllegalArgumentException("Cannot find a position for Order ID: " + id);
@@ -181,18 +184,15 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
 
 
   @Override
-  public double getAverageWaitTime(int currentEpochTimeSec) {
+  public double getAverageWaitTime(int curTimeEpochSec) {
 
-    if (currentEpochTimeSec < this.startSec) {
-      throw new IllegalArgumentException("The time provided is earlier than the system started: "
-          + Util.epochSecondToString(currentEpochTimeSec));
-    }
+    checkRequestTime(curTimeEpochSec);
 
     readLock.lock();
     try {
 
       return Arrays.stream(queues).flatMap(queue -> StreamSupport.stream(queue.spliterator(), false))
-          .mapToDouble(value -> value.getEnqueueTimeSec() - currentEpochTimeSec)
+          .mapToDouble(value -> curTimeEpochSec - value.getEnqueueTimeSec())
           .average().orElse(-1.0);
 
     } finally {
@@ -210,14 +210,14 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
     }
   }
 
-  private QueueCategory getQueueCategoryWithMaxPriority() {
+  private QueueCategory getQueueCategoryWithMaxPriority(int curTimeEpochSec) {
     double priority = -1.0;
     QueueCategory priorityCategory = QueueCategory.DUMMY;
     for (QueueCategory queueType : SECOND_PRIORITY_QUEUES) {
 
       QueueData peeked = queues[queueType.getIdx()].isEmpty() ? null : queues[queueType.getIdx()].peekFirst();
       if (peeked != null) {
-        double newPriority = QueueData.getPriority(queueType, getQueuedSec(peeked));
+        double newPriority = QueueData.getPriority(queueType, curTimeEpochSec - peeked.getEnqueueTimeSec());
         if (newPriority > priority) {
           priorityCategory = queueType;
           priority = newPriority;
@@ -229,17 +229,14 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
   }
 
 
-  private MaxIterableAdapter<QueueData> getNonManIterableAdapter() {
+  private MaxIterableAdapter<QueueData> getNonManIterableAdapter(int curTimeEpochSec) {
     return new MaxIterableAdapter<>(
         Arrays.stream(SECOND_PRIORITY_QUEUES)
-            .map(elem -> (Function<QueueData, Double>) queueData -> QueueData.getPriority(elem, getQueuedSec(queueData)))
+            .map(elem -> (Function<QueueData, Double>) queueData ->
+                QueueData.getPriority(elem, curTimeEpochSec - queueData.getEnqueueTimeSec()))
             .collect(Collectors.toList()),
         Arrays.stream(SECOND_PRIORITY_QUEUES).map(elem -> queues[elem.getIdx()].iterator()).collect(Collectors.toList())
     );
-  }
-
-  private int getQueuedSec(QueueData queueData) {
-    return queueData.getEnqueueTimeSec() - startSec;
   }
 
   private int getRankPositionInQueue(Iterable<QueueData> iterable, long id) {
@@ -251,6 +248,13 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
       idx++;
     }
     return -1;
+  }
+
+  private void checkRequestTime(int curTimeEpochSec) {
+    if (curTimeEpochSec < startSec) {
+      throw new IllegalArgumentException(String.format("Request time: %s must not exceed start time: %s",
+          Util.epochSecondToString(curTimeEpochSec), Util.epochSecondToString(startSec)));
+    }
   }
 
 

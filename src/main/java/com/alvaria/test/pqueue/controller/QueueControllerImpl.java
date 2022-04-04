@@ -19,11 +19,11 @@ public class QueueControllerImpl implements QueueController {
   }
 
   public QueueData dequeueOrder() {
-    return globalPriorityQueue.dequeue();
+    return globalPriorityQueue.dequeue(Util.getNowCurrentEpochSeconds());
   }
 
   public List<Long> getIdListSortedByPriority() {
-    return globalPriorityQueue.getIdListSortedByPriority();
+    return globalPriorityQueue.getIdListSortedByPriority(Util.getNowCurrentEpochSeconds());
   }
 
   public void remove(long id) {
@@ -31,7 +31,7 @@ public class QueueControllerImpl implements QueueController {
   }
 
   public long getPosition(long id) {
-    return globalPriorityQueue.getPosition(id);
+    return globalPriorityQueue.getPosition(id, Util.getNowCurrentEpochSeconds());
   }
 
   public double getAverageWaitTime(LocalDateTime currentTime) {

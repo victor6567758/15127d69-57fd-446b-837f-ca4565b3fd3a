@@ -2,6 +2,9 @@ package com.alvaria.test.pqueue.controller;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 
@@ -40,7 +43,7 @@ class QueueControllerTest {
   @Test
   void vanillaListOrdersTest() {
 
-    given(queueService.getIdListSortedByPriority()).willReturn(Arrays.asList(1L, 2L, 3L));
+    given(queueService.getIdListSortedByPriority(any(Integer.class))).willReturn(Arrays.asList(1L, 2L, 3L));
 
     ResponseEntity<Integer[]> response = restTemplate.getForEntity("/api/", Integer[].class);
 
@@ -65,7 +68,7 @@ class QueueControllerTest {
 
     LocalDateTime now = LocalDateTime.now();
     int secs = Util.getSeconds(now);
-    given(queueService.dequeue()).willReturn(new QueueData(secs, 2L));
+    given(queueService.dequeue(anyInt())).willReturn(new QueueData(secs, 2L));
 
     ResponseEntity<QueueData> response = restTemplate.getForEntity("/api/top", QueueData.class);
 
@@ -106,7 +109,7 @@ class QueueControllerTest {
 
   @Test
   void vanillaGetPositionTest() {
-    given(queueService.getPosition(1L)).willReturn(48);
+    given(queueService.getPosition(eq(1L), anyInt())).willReturn(48);
 
     ResponseEntity<Integer> response = restTemplate.getForEntity("/api/position/1", Integer.class);
 
