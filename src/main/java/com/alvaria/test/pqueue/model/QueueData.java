@@ -8,7 +8,7 @@ public class QueueData {
   private final int enqueueTimeSec;
   private final long id;
 
-  public static double getPriority(QueueType queueType, int secs) {
+  public static double getPriority(QueueCategory queueType, int secs) {
 
     if (secs < 0) {
       throw new IllegalArgumentException("Invalid number of seconds for queued data");
@@ -28,17 +28,17 @@ public class QueueData {
     }
   }
 
-  public static QueueType getOrderType(QueueData queueData) {
+  public static QueueCategory getOrderCategory(QueueData queueData) {
     boolean div3 = queueData.getId() % 3 == 0;
     boolean div5 = queueData.getId() % 5 == 0;
     if (div3 && div5) {
-      return QueueType.MANAGEMENT;
+      return QueueCategory.MANAGEMENT;
     } else if (div5) {
-      return QueueType.VIP;
+      return QueueCategory.VIP;
     } else if (div3) {
-      return QueueType.PRIORITY;
+      return QueueCategory.PRIORITY;
     }
-    return QueueType.NORMAL;
+    return QueueCategory.NORMAL;
   }
 
 

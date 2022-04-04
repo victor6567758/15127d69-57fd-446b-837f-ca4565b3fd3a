@@ -14,7 +14,7 @@ public interface GlobalPriorityQueueService {
 
   int getPosition(long id);
 
-  double getAverageWaitTime(long currentEpochTimeSec);
+  double getAverageWaitTime(int currentEpochTimeSec);
 
   void clear();
 

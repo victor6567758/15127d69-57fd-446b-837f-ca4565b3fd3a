@@ -15,7 +15,7 @@ class OrderPriorityQueueTest {
   @Test
   void enqueueVanillaTest() {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-    int curEpochSec = Util.getCurrentSeconds();
+    int curEpochSec = Util.getNowCurrentEpochSeconds();
 
     orderPriorityQueue.enqueue(new QueueData(curEpochSec + 1, 1L));
     orderPriorityQueue.enqueue(new QueueData(curEpochSec + 3, 2L));
@@ -37,14 +37,14 @@ class OrderPriorityQueueTest {
       orderPriorityQueue.enqueue(new QueueData(-1, 1L));
     });
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      orderPriorityQueue.enqueue(new QueueData(Util.getCurrentSeconds(), -1L));
+      orderPriorityQueue.enqueue(new QueueData(Util.getNowCurrentEpochSeconds(), -1L));
     });
   }
 
   @Test
   void enqueueDuplicateIdTest() {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-    int curEpochSec = Util.getCurrentSeconds();
+    int curEpochSec = Util.getNowCurrentEpochSeconds();
 
     QueueData queueData1 = new QueueData(curEpochSec + 1, 1L);
     QueueData queueData2 = new QueueData(curEpochSec + 3, 1L);
@@ -59,7 +59,7 @@ class OrderPriorityQueueTest {
   @Test
   void enqueueDuplicatePriorityTest() {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-    int curEpochSec = Util.getCurrentSeconds();
+    int curEpochSec = Util.getNowCurrentEpochSeconds();
 
     orderPriorityQueue.enqueue(new QueueData(curEpochSec, 1L));
     orderPriorityQueue.enqueue(new QueueData(curEpochSec, 2L));
@@ -75,7 +75,7 @@ class OrderPriorityQueueTest {
   @Test
   void removeFirstVanillaTest() {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-    int curEpochSec = Util.getCurrentSeconds();
+    int curEpochSec = Util.getNowCurrentEpochSeconds();
 
     orderPriorityQueue.enqueue(new QueueData(curEpochSec + 1, 1L));
     orderPriorityQueue.enqueue(new QueueData(curEpochSec + 3, 2L));
@@ -97,7 +97,7 @@ class OrderPriorityQueueTest {
   @Test
   void peekFirstVanillaTest() {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-    int curEpochSec = Util.getCurrentSeconds();
+    int curEpochSec = Util.getNowCurrentEpochSeconds();
 
     orderPriorityQueue.enqueue(new QueueData(curEpochSec + 1, 1L));
     orderPriorityQueue.enqueue(new QueueData(curEpochSec + 3, 2L));
@@ -131,7 +131,7 @@ class OrderPriorityQueueTest {
   @Test
   void isEmptyVanillaTest() {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-    orderPriorityQueue.enqueue(new QueueData(Util.getCurrentSeconds(), 1L));
+    orderPriorityQueue.enqueue(new QueueData(Util.getNowCurrentEpochSeconds(), 1L));
 
     assertThat(StreamSupport.stream(orderPriorityQueue.spliterator(), false)
         .map(QueueData::getEnqueueTimeSec).collect(Collectors.toList()))
@@ -149,7 +149,7 @@ class OrderPriorityQueueTest {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
     assertThat(orderPriorityQueue.size()).isEqualTo(0);
 
-    orderPriorityQueue.enqueue(new QueueData(Util.getCurrentSeconds(), 1L));
+    orderPriorityQueue.enqueue(new QueueData(Util.getNowCurrentEpochSeconds(), 1L));
     assertThat(orderPriorityQueue.size()).isEqualTo(1);
 
   }
@@ -157,7 +157,7 @@ class OrderPriorityQueueTest {
   @Test
   void removeVanillaTest() {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-    int curEpochSec = Util.getCurrentSeconds();
+    int curEpochSec = Util.getNowCurrentEpochSeconds();
 
     orderPriorityQueue.enqueue(new QueueData(curEpochSec + 1, 1L));
     orderPriorityQueue.enqueue(new QueueData(curEpochSec + 3, 2L));
@@ -173,7 +173,7 @@ class OrderPriorityQueueTest {
   @Test
   void clearVanillaTest() {
     OrderPriorityQueue orderPriorityQueue = OrderPriorityQueueFactory.create();
-    orderPriorityQueue.enqueue(new QueueData(Util.getCurrentSeconds(), 1L));
+    orderPriorityQueue.enqueue(new QueueData(Util.getNowCurrentEpochSeconds(), 1L));
 
     assertThat(orderPriorityQueue.isEmpty()).isFalse();
     orderPriorityQueue.clear();

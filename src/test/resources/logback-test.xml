@@ -11,4 +11,5 @@
 
   <logger name="org.testcontainers" level="INFO"/>
   <logger name="com.github.dockerjava" level="INFO"/>
+  <logger name="com.alvaria.test" level="DEBUG"/>
 </configuration>
