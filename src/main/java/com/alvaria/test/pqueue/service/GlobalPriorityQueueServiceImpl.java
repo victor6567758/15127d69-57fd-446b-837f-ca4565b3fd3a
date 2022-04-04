@@ -3,6 +3,7 @@ package com.alvaria.test.pqueue.service;
 import com.alvaria.test.pqueue.model.QueueCategory;
 import com.alvaria.test.pqueue.model.QueueData;
 import com.alvaria.test.pqueue.util.MaxIterableAdapter;
+import com.alvaria.test.pqueue.util.ReadView;
 import com.alvaria.test.pqueue.util.Util;
 import com.alvaria.test.pqueue.util.pqueue.OrderPriorityQueue;
 import com.alvaria.test.pqueue.util.pqueue.OrderPriorityQueueFactory;
@@ -38,6 +39,8 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
   };
 
   private final int startSec = Util.getNowCurrentEpochSeconds();
+
+  private ReadView<QueueData, Long> dataView;
 
   private int maxEnqueueTime = -1;
 
@@ -162,7 +165,7 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
       int managementRank = -1;
       OrderPriorityQueue managementQueue = queues[QueueCategory.MANAGEMENT.getIdx()];
       if (!managementQueue.isEmpty()) {
-        managementRank = getRankPositionInQueue(managementQueue, id);
+        managementRank = managementQueue.getRankPosition(id);
         if (managementRank >= 0) {
           return managementRank;
         }
