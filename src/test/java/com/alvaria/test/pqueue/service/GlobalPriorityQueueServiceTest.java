@@ -290,9 +290,9 @@ class GlobalPriorityQueueServiceTest {
   void bulkRandomGeneratedOrdersDequeueTest() {
     enqueueBulkData();
 
-    int idx = 0;
+
     double prevPriorityDequeued = -1.0;
-    while (idx < BULK_ODER_TEST) {
+    for (int i = 0; i < BULK_ODER_TEST; i++) {
       QueueData dequeuedData = globalPriorityQueue.dequeue();
 
       double priorityDequeued = QueueData.getPriority(QueueData.getOrderCategory(dequeuedData),
@@ -303,7 +303,6 @@ class GlobalPriorityQueueServiceTest {
       }
 
       prevPriorityDequeued = priorityDequeued;
-      idx++;
     }
   }
 
