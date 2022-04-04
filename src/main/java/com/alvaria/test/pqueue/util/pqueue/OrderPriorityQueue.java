@@ -16,6 +16,8 @@ public interface OrderPriorityQueue extends Iterable<QueueData> {
 
   int size();
 
+  int getRankPosition(long id);
+
   void clear();
 
 }

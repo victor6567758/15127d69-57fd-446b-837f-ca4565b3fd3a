@@ -74,6 +74,19 @@ public class OrderPriorityQueueImpl implements OrderPriorityQueue {
     return orderPriorityTree.size();
   }
 
+  @Override
+  public int getRankPosition(long id) {
+    if (orderPriorityTree.isEmpty()) {
+      return 0;
+    }
+    QueueData queueData = idDataMap.get(id);
+    if (queueData == null) {
+      return 0;
+    }
+
+    return orderPriorityTree.headSet(queueData, false).size() - 1;
+
+  }
 
   @Override
   public Iterator<QueueData> iterator() {
