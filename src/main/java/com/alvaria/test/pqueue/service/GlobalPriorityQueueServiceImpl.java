@@ -70,6 +70,8 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
 
   @Override
   public QueueData dequeue(int curTimeEpochSec) {
+    checkRequestTime(curTimeEpochSec);
+
     writeLock.lock();
     try {
 
@@ -112,7 +114,7 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
     try {
       for (QueueCategory queueType : ALL_PRIORITY_QUEUES) {
         if (!queues[queueType.getIdx()].isEmpty() && queues[queueType.getIdx()].remove(id) != null) {
-          log.debug("Removed data with id {}", id);
+          log.debug("Removed data with id {} from queue {}", id, queueType);
           return;
         }
       }
@@ -157,24 +159,21 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
     readLock.lock();
     try {
 
-      int result = -1;
-
+      int managementRank = -1;
       OrderPriorityQueue managementQueue = queues[QueueCategory.MANAGEMENT.getIdx()];
       if (!managementQueue.isEmpty()) {
-        result = getRankPositionInQueue(managementQueue, id);
+        managementRank = getRankPositionInQueue(managementQueue, id);
+        if (managementRank >= 0) {
+          return managementRank;
+        }
       }
 
-      if (result >= 0) {
-        return result;
-      }
-
-      result = managementQueue.size() +
-          getRankPositionInQueue(getNonManIterableAdapter(curTimeEpochSec), id);
-
-      if (result < 0) {
+      int otherRank = getRankPositionInQueue(getNonManIterableAdapter(curTimeEpochSec), id);
+      if (otherRank < 0) {
         throw new IllegalArgumentException("Cannot find a position for Order ID: " + id);
       }
 
+      int result = managementQueue.size() + otherRank;
       log.debug("Found position for data with {}: {}", id, result);
       return result;
     } finally {
@@ -204,7 +203,13 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
   public void clear() {
     writeLock.lock();
     try {
-      Arrays.stream(queues).forEach(OrderPriorityQueue::clear);
+      Arrays.stream(queues).forEach(
+          queue -> {
+            if (!queue.isEmpty()) {
+              queue.clear();
+            }
+          }
+      );
     } finally {
       writeLock.unlock();
     }

@@ -10,8 +10,10 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -313,6 +315,33 @@ class GlobalPriorityQueueServiceTest {
 
       prevPriorityDequeued = priorityDequeued;
     }
+  }
+
+  @Test
+  void bulkRandomGeneratedOrdersRemoveTest() {
+    int testTime = enqueueBulkData();
+    List<Long> idList = globalPriorityQueue.getIdListSortedByPriority(testTime);
+    assertThat(idList.size()).isEqualTo(BULK_ODER_TEST);
+
+    int[] iArr = new int[1];
+    Set<Long> removed = new HashSet<>();
+    for (int i = 0; i < idList.size(); i++) {
+      if (i % 2 == 0) {
+        globalPriorityQueue.remove(idList.get(i));
+        removed.add(idList.get(i));
+
+        iArr[0] = i;
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+          globalPriorityQueue.getPosition(idList.get(iArr[0]), testTime);
+        });
+
+      }
+    }
+
+    List<Long> newIdList = globalPriorityQueue.getIdListSortedByPriority(testTime);
+    newIdList.forEach(orderId -> {
+      assertThat(removed).doesNotContain(orderId);
+    });
   }
 
   @Test
