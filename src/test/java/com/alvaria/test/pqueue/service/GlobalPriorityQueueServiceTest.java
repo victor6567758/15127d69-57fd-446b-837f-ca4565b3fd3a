@@ -333,7 +333,7 @@ class GlobalPriorityQueueServiceTest {
         iArr[0] = i;
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
           globalPriorityQueue.getPosition(idList.get(iArr[0]), testTime);
-        });
+        }, "Index: " + iArr[0] + ", Order ID: " + iArr[0] );
 
       }
     }

@@ -59,6 +59,7 @@ public class OrderPriorityQueueImpl implements OrderPriorityQueue {
       return null;
     }
 
+    idDataMap.remove(id);
     orderPriorityTree.remove(queueData);
     return queueData;
   }
@@ -76,14 +77,15 @@ public class OrderPriorityQueueImpl implements OrderPriorityQueue {
   @Override
   public int getRankPosition(long id) {
     if (orderPriorityTree.isEmpty()) {
-      return 0;
-    }
-    QueueData queueData = idDataMap.get(id);
-    if (queueData == null) {
-      return 0;
+      return -1;
     }
 
-    return orderPriorityTree.headSet(queueData, false).size() - 1;
+    QueueData queueData = idDataMap.get(id);
+    if (queueData == null) {
+      return -1;
+    }
+
+    return orderPriorityTree.headSet(queueData, true).size() - 1;
 
   }
 

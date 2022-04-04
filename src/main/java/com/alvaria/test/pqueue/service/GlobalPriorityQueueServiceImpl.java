@@ -39,73 +39,60 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
 
   private final int startSec = Util.getNowCurrentEpochSeconds();
 
-  private int maxEnqueueTime = -1;
-
-
   @Override
   public void enqueue(QueueData queueData) {
 
+    checkRequestTime(queueData.getEnqueueTimeSec());
+
+    if (queueData.getId() < 1) {
+      throw new IllegalArgumentException("ID must be greater than 0");
+    }
+
+    QueueCategory queueType = QueueData.getOrderCategory(queueData);
+
     writeLock.lock();
     try {
-
-      if (queueData.getId() < 1) {
-        throw new IllegalArgumentException("ID must be greater than 0");
-      }
-
-      if (queueData.getEnqueueTimeSec() - startSec < 0) {
-        throw new IllegalArgumentException("Cannot insert orders earlier than Queue exists");
-      }
-
-      QueueCategory queueType = QueueData.getOrderCategory(queueData);
       queues[queueType.getIdx()].enqueue(queueData);
-
-      maxEnqueueTime = Math.max(maxEnqueueTime, queueData.getEnqueueTimeSec());
-
-      log.debug("Enqueued: {}", queueData);
-
     } finally {
       writeLock.unlock();
     }
+
+    log.debug("Enqueued: {}", queueData);
   }
 
   @Override
   public QueueData dequeue(int curTimeEpochSec) {
     checkRequestTime(curTimeEpochSec);
 
+    QueueData dequeuedData = null;
     writeLock.lock();
     try {
 
       if (!queues[QueueCategory.MANAGEMENT.getIdx()].isEmpty()) {
-        QueueData dequeuedData = queues[QueueCategory.MANAGEMENT.getIdx()].removeFirst();
-        log.info("Dequeued from management queue: {}", dequeuedData);
-
-        return dequeuedData;
+        dequeuedData = queues[QueueCategory.MANAGEMENT.getIdx()].removeFirst();
       } else {
-
         QueueCategory priorityType = getQueueCategoryWithMaxPriority(curTimeEpochSec);
-
         if (priorityType != QueueCategory.DUMMY) {
-          QueueData dequeuedData = queues[priorityType.getIdx()].removeFirst();
-
-          if (log.isDebugEnabled()) {
-            QueueCategory queueCategory = QueueData.getOrderCategory(dequeuedData);
-            double priorityDequeued =
-                QueueData.getPriority(queueCategory, curTimeEpochSec - dequeuedData.getEnqueueTimeSec());
-
-            log.debug("Dequeued: {}, priority: {}, category: {}", dequeuedData,
-                priorityDequeued, queueCategory);
-          }
-
-          return dequeuedData;
+          dequeuedData = queues[priorityType.getIdx()].removeFirst();
         }
-
       }
-
-      throw new IllegalArgumentException("Queue is empty");
-
     } finally {
       writeLock.unlock();
     }
+
+    if (dequeuedData == null) {
+      throw new IllegalArgumentException("Queue is empty");
+    }
+
+    if (log.isDebugEnabled()) {
+      QueueCategory queueCategory = QueueData.getOrderCategory(dequeuedData);
+      double priorityDequeued =
+          QueueData.getPriority(queueCategory, curTimeEpochSec - dequeuedData.getEnqueueTimeSec());
+
+      log.debug("Dequeued: {}, priority: {}, category: {}", dequeuedData,
+          priorityDequeued, queueCategory);
+    }
+    return dequeuedData;
   }
 
   @Override
@@ -114,7 +101,6 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
     try {
       for (QueueCategory queueType : ALL_PRIORITY_QUEUES) {
         if (!queues[queueType.getIdx()].isEmpty() && queues[queueType.getIdx()].remove(id) != null) {
-          log.debug("Removed data with id {} from queue {}", id, queueType);
           return;
         }
       }
@@ -126,13 +112,13 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
   @Override
   public List<Long> getIdListSortedByPriority(int curTimeEpochSec) {
     checkRequestTime(curTimeEpochSec);
+    OrderPriorityQueue managementQueue = queues[QueueCategory.MANAGEMENT.getIdx()];
+    List<Long> result = new ArrayList<>();
+
 
     readLock.lock();
     try {
 
-      OrderPriorityQueue managementQueue = queues[QueueCategory.MANAGEMENT.getIdx()];
-
-      final List<Long> result = new ArrayList<>();
       if (!managementQueue.isEmpty()) {
         StreamSupport
             .stream(managementQueue.spliterator(), false)
@@ -144,41 +130,45 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
           .map(QueueData::getId)
           .forEach(result::add);
 
-      return result;
 
     } finally {
       readLock.unlock();
     }
 
+    return result;
   }
 
   @Override
   public int getPosition(long id, int curTimeEpochSec) {
     checkRequestTime(curTimeEpochSec);
+    OrderPriorityQueue managementQueue = queues[QueueCategory.MANAGEMENT.getIdx()];
+
+    int otherRank = -1;
+    int managementRank = -1;
 
     readLock.lock();
     try {
 
-      int managementRank = -1;
-      OrderPriorityQueue managementQueue = queues[QueueCategory.MANAGEMENT.getIdx()];
       if (!managementQueue.isEmpty()) {
-        managementRank = getRankPositionInQueue(managementQueue, id);
+        managementRank = managementQueue.getRankPosition(id);
         if (managementRank >= 0) {
           return managementRank;
         }
       }
+      otherRank = getRankPositionInQueue(getNonManIterableAdapter(curTimeEpochSec), id);
 
-      int otherRank = getRankPositionInQueue(getNonManIterableAdapter(curTimeEpochSec), id);
-      if (otherRank < 0) {
-        throw new IllegalArgumentException("Cannot find a position for Order ID: " + id);
-      }
-
-      int result = managementQueue.size() + otherRank;
-      log.debug("Found position for data with {}: {}", id, result);
-      return result;
     } finally {
       readLock.unlock();
     }
+
+    if (otherRank < 0) {
+      throw new IllegalArgumentException("Cannot find a position for Order ID: " + id);
+    }
+
+    int result = managementQueue.size() + otherRank;
+    log.debug("Found position for data with {}: {}", id, result);
+
+    return result;
   }
 
 
