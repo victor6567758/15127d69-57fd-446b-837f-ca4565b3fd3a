@@ -48,18 +48,16 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
   @Override
   public void enqueue(QueueData queueData) {
 
+    checkRequestTime(queueData.getEnqueueTimeSec());
+
+    if (queueData.getId() < 1) {
+      throw new IllegalArgumentException("ID must be greater than 0");
+    }
+    QueueCategory queueType = QueueData.getOrderCategory(queueData);
+
     writeLock.lock();
     try {
 
-      if (queueData.getId() < 1) {
-        throw new IllegalArgumentException("ID must be greater than 0");
-      }
-
-      if (queueData.getEnqueueTimeSec() - startSec < 0) {
-        throw new IllegalArgumentException("Cannot insert orders earlier than Queue exists");
-      }
-
-      QueueCategory queueType = QueueData.getOrderCategory(queueData);
       queues[queueType.getIdx()].enqueue(queueData);
 
       maxEnqueueTime = Math.max(maxEnqueueTime, queueData.getEnqueueTimeSec());

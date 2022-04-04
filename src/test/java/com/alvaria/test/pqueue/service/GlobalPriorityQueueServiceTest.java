@@ -211,7 +211,7 @@ class GlobalPriorityQueueServiceTest {
         .isEqualTo(2);
 
     assertThat(resultList.get(0))
-        .isEqualTo(resultList.get(globalPriorityQueue.getPosition(queueData1.getId(),testTime)));
+        .isEqualTo(resultList.get(globalPriorityQueue.getPosition(queueData1.getId(), testTime)));
     assertThat(resultList.get(1))
         .isEqualTo(resultList.get(globalPriorityQueue.getPosition(queueData2.getId(), testTime)));
     assertThat(resultList.get(2))
@@ -301,7 +301,6 @@ class GlobalPriorityQueueServiceTest {
   void bulkRandomGeneratedOrdersDequeueTest() {
     int testTime = enqueueBulkData();
 
-
     double prevPriorityDequeued = -1.0;
     for (int i = 0; i < BULK_ODER_TEST; i++) {
       QueueData dequeuedData = globalPriorityQueue.dequeue(testTime);
@@ -380,6 +379,5 @@ class GlobalPriorityQueueServiceTest {
 
     return testTime;
   }
-
 
 }
