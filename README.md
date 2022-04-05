@@ -20,8 +20,15 @@ augmented trees: https://tildesites.bowdoin.edu/~ltoma/teaching/cs231/fall09/Lec
 I found a sort of implementation: https://github.com/btrekkie/RedBlackNode but to take ownership of that code 
 I will need to add plenty of unit test after refactoring, so using standards Java structures is safer.
 
-
 For merge operation over 3 sorted lists I used a trivial technique, because we have only 3 of them (https://en.wikipedia.org/wiki/Merge_algorithm)
+
+Controller tests `QueueControllerTest` could be more lightweight like with `MockMvc`, for example. 
+I prefer to keep only validation/transformation logic in controllers.
+
+In real PROD project I would use `ObectMaper` or similar to create response objects like
+`QueueDataResponse`. The main idea is not to allow model POJOs directly for REST endpoints.
+
+
 
 ## Run/Build project
 
