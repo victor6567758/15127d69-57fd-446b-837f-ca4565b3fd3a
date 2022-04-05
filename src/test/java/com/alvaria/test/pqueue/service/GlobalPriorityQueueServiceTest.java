@@ -1,6 +1,9 @@
 package com.alvaria.test.pqueue.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doReturn;
 
 import com.alvaria.test.pqueue.model.QueueCategory;
 import com.alvaria.test.pqueue.model.QueueData;
@@ -8,7 +11,6 @@ import com.alvaria.test.pqueue.util.TestConst;
 import com.alvaria.test.pqueue.util.Util;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +26,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 
 
@@ -33,12 +37,19 @@ class GlobalPriorityQueueServiceTest {
 
   private static final int BULK_ODER_TEST = 1000;
 
-  @Autowired
+  @SpyBean
   private GlobalPriorityQueueService globalPriorityQueue;
 
   @BeforeEach
   public void setUp() {
     globalPriorityQueue.clear();
+
+    doReturn(Util.getNowCurrentEpochSeconds())
+        .when((GlobalPriorityQueueServiceImpl)globalPriorityQueue).getCurrentStartTimeSec();
+
+    doReturn(Util.getNowCurrentEpochSeconds() + (int) Duration.of(900, ChronoUnit.DAYS).getSeconds())
+        .when((GlobalPriorityQueueServiceImpl)globalPriorityQueue).getCurrentOperationTimeSec();
+
   }
 
   @Test
@@ -211,7 +222,7 @@ class GlobalPriorityQueueServiceTest {
         .isEqualTo(2);
 
     assertThat(resultList.get(0))
-        .isEqualTo(resultList.get(globalPriorityQueue.getPosition(queueData1.getId(),testTime)));
+        .isEqualTo(resultList.get(globalPriorityQueue.getPosition(queueData1.getId(), testTime)));
     assertThat(resultList.get(1))
         .isEqualTo(resultList.get(globalPriorityQueue.getPosition(queueData2.getId(), testTime)));
     assertThat(resultList.get(2))
@@ -301,7 +312,6 @@ class GlobalPriorityQueueServiceTest {
   void bulkRandomGeneratedOrdersDequeueTest() {
     int testTime = enqueueBulkData();
 
-
     double prevPriorityDequeued = -1.0;
     for (int i = 0; i < BULK_ODER_TEST; i++) {
       QueueData dequeuedData = globalPriorityQueue.dequeue(testTime);
@@ -333,7 +343,7 @@ class GlobalPriorityQueueServiceTest {
         iArr[0] = i;
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
           globalPriorityQueue.getPosition(idList.get(iArr[0]), testTime);
-        }, "Index: " + iArr[0] + ", Order ID: " + iArr[0] );
+        }, "Index: " + iArr[0] + ", Order ID: " + iArr[0]);
 
       }
     }

@@ -3,6 +3,7 @@ package com.alvaria.test.pqueue.util;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -18,7 +19,12 @@ public class Util {
 
   public String epochSecondToString(int epochSec) {
     return Instant.ofEpochSecond(epochSec).atZone(ZoneId.systemDefault()).format(
-        Const.REST_DATETIME_FORMAT_FORMATTER);
+        DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+  }
+
+  public String epochSecondToString(int epochSec, String pattern) {
+    return Instant.ofEpochSecond(epochSec).atZone(ZoneId.systemDefault()).format(
+        DateTimeFormatter.ofPattern(pattern));
   }
 
 

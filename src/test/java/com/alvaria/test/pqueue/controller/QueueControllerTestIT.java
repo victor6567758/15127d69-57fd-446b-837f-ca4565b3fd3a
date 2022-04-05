@@ -2,7 +2,6 @@ package com.alvaria.test.pqueue.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.alvaria.test.pqueue.model.QueueData;
 import java.nio.file.Paths;
 import org.junit.ClassRule;
 import org.junit.jupiter.api.Assertions;

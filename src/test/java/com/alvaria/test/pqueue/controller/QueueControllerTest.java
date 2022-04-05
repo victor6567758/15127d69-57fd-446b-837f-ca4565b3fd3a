@@ -9,11 +9,14 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 
 import com.alvaria.test.pqueue.model.QueueData;
+import com.alvaria.test.pqueue.model.response.QueueDataResponse;
 import com.alvaria.test.pqueue.service.GlobalPriorityQueueService;
 import com.alvaria.test.pqueue.util.Const;
 import com.alvaria.test.pqueue.util.TestConst;
 import com.alvaria.test.pqueue.util.Util;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
@@ -70,15 +73,16 @@ class QueueControllerTest {
     int secs = Util.getSeconds(now);
     given(queueService.dequeue(anyInt())).willReturn(new QueueData(secs, 2L));
 
-    ResponseEntity<QueueData> response = restTemplate.getForEntity("/api/top", QueueData.class);
+    ResponseEntity<QueueDataResponse> response = restTemplate.getForEntity("/api/top", QueueDataResponse.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody().getId()).isEqualTo(2L);
-    assertThat(response.getBody().getEnqueueTimeSec()).isEqualTo(secs);
+    assertThat(response.getBody().getEnqueueTime())
+        .isEqualTo(Instant.ofEpochSecond(secs).atZone(ZoneId.systemDefault()).toLocalDateTime());
   }
 
   @Test
-  void createEnqueueOrderInvalidDateTest() {
+  void enqueueOrderInvalidDateTest() {
 
     willDoNothing().given(queueService).enqueue(new QueueData(Util.getSeconds(LocalDateTime.now()), 1L));
 
@@ -88,7 +92,7 @@ class QueueControllerTest {
   }
 
   @Test
-  void createEnqueueOrderInvalidIdTest() {
+  void enqueueInvalidIdTest() {
     LocalDateTime now = LocalDateTime.now();
     String stringNow = now.format(DateTimeFormatter.ofPattern(Const.REST_DATETIME_FORMAT));
     willDoNothing().given(queueService).enqueue(new QueueData(Util.getSeconds(LocalDateTime.now()), 1L));
@@ -97,6 +101,7 @@ class QueueControllerTest {
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
   }
+
 
   @Test
   void vanillaRemoveByIdTest() {

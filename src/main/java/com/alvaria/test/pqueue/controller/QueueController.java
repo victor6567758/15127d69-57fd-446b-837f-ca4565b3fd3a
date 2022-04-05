@@ -1,6 +1,6 @@
 package com.alvaria.test.pqueue.controller;
 
-import com.alvaria.test.pqueue.model.QueueData;
+import com.alvaria.test.pqueue.model.response.QueueDataResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.validation.constraints.Min;
@@ -25,7 +25,7 @@ public interface QueueController {
       @DateTimeFormat(pattern = "ddMMyyyy_HHmmss") @PathVariable("createTime") LocalDateTime createTime);
 
   @GetMapping("/top")
-  QueueData dequeueOrder();
+  QueueDataResponse dequeueOrder();
 
   @GetMapping("/")
   List<Long> getIdListSortedByPriority();

@@ -1,6 +1,7 @@
 package com.alvaria.test.pqueue.controller;
 
 import com.alvaria.test.pqueue.model.QueueData;
+import com.alvaria.test.pqueue.model.response.QueueDataResponse;
 import com.alvaria.test.pqueue.service.GlobalPriorityQueueService;
 import com.alvaria.test.pqueue.util.Util;
 import java.time.LocalDateTime;
@@ -18,8 +19,8 @@ public class QueueControllerImpl implements QueueController {
     globalPriorityQueue.enqueue(new QueueData(Util.getSeconds(createTime), id));
   }
 
-  public QueueData dequeueOrder() {
-    return globalPriorityQueue.dequeue(Util.getNowCurrentEpochSeconds());
+  public QueueDataResponse dequeueOrder() {
+    return new QueueDataResponse(globalPriorityQueue.dequeue(Util.getNowCurrentEpochSeconds()));
   }
 
   public List<Long> getIdListSortedByPriority() {

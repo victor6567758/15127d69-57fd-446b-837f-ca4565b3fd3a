@@ -1,29 +1,17 @@
-# 15127d69-57fd-446b-837f-ca4565b3fd3a
-
-https://thepracticaldeveloper.com/guide-spring-boot-controller-tests/
-
-An endpoint for getting the top ID from the queue and removing it (de-queue). 
-This endpoint should return the highest ranked ID and the time it was entered into the queue.
-
-first rank id then time
+Design/Implementation considerations
 
 
-https://github.com/btrekkie/RedBlackNode/blob/master/src/main/java/com/github/btrekkie/tree_list/TreeList.java
+Not done yet:
+API documentation must be improved
+Tests must be refactored to match BDD (Given... When... Then...). Unit tests cannot fulfill this completely but still a good idea to align. The number of IT scenarios must be increased.
+To improve the performance of returning a specific position by ID it would be good to use kinetic structures or similar (https://en.wikipedia.org/wiki/Kinetic_sorted_list, https://github.com/frankfarrell/kds4j). This will help to advance the structure when the time goes on
 
 
-https://tildesites.bowdoin.edu/~ltoma/teaching/cs231/fall09/Lectures/10-augmentedTrees/augtrees.pdf
-
-
-java -jar -Dspring.profiles.active=local target/pqueue.jar
-
-mvn spring-boot:run -Dspring-boot.run.profiles=local
-
-mvn spring-boot:run -Dspring-boot.run.profiles=local
-
-mvn clean test -P integration-test
-
-mvn dockerfile:build
-
-mvn spring-boot:run
-
-http://localhost:8080/v2/api-docs
+Run/Build project:
+Build: mvn clean install
+Run with local profile: mvn spring-boot:run -Dspring-boot.run.profiles=local
+"local" profile is expected to be used with local system development only. Swagger and dev tools are disabled in prod profile
+Run integration tests: mvn clean verify -P integration-test
+It uses a light-weight Docker container com.alvaria.test.pqueue.controller.QueueControllerTestIT
+API documentation
+Execute with local profile and navigate to http://localhost:8080/swagger-ui/#

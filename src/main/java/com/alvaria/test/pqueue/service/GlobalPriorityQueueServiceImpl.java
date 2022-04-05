@@ -15,6 +15,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueService {
 
-  private static final QueueCategory[] SECOND_PRIORITY_QUEUES = {QueueCategory.VIP, QueueCategory.PRIORITY, QueueCategory.NORMAL};
-  private static final QueueCategory[] ALL_PRIORITY_QUEUES = {QueueCategory.MANAGEMENT, QueueCategory.VIP, QueueCategory.PRIORITY, QueueCategory.NORMAL};
+  private static final QueueCategory[] SECOND_PRIORITY_QUEUES =
+      {QueueCategory.VIP, QueueCategory.PRIORITY, QueueCategory.NORMAL};
+  private static final QueueCategory[] ALL_PRIORITY_QUEUES =
+      {QueueCategory.MANAGEMENT, QueueCategory.VIP, QueueCategory.PRIORITY, QueueCategory.NORMAL};
 
   private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
   private final ReadLock readLock = lock.readLock();
@@ -37,7 +40,12 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
       OrderPriorityQueueFactory.create()
   };
 
-  private final int startSec = Util.getNowCurrentEpochSeconds();
+  private int startSec;
+
+  @PostConstruct
+  public void initialize() {
+    startSec = getCurrentStartTimeSec();
+  }
 
   @Override
   public void enqueue(QueueData queueData) {
@@ -114,7 +122,6 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
     checkRequestTime(curTimeEpochSec);
     OrderPriorityQueue managementQueue = queues[QueueCategory.MANAGEMENT.getIdx()];
     List<Long> result = new ArrayList<>();
-
 
     readLock.lock();
     try {
@@ -246,10 +253,23 @@ public class GlobalPriorityQueueServiceImpl implements GlobalPriorityQueueServic
   }
 
   private void checkRequestTime(int curTimeEpochSec) {
-    if (curTimeEpochSec < startSec) {
-      throw new IllegalArgumentException(String.format("Request time: %s must not exceed start time: %s",
-          Util.epochSecondToString(curTimeEpochSec), Util.epochSecondToString(startSec)));
+    int curTimeSec = getCurrentOperationTimeSec();
+    if (curTimeEpochSec < startSec || curTimeEpochSec > curTimeSec) {
+      throw new IllegalArgumentException(String.format(
+          "Request time: %s must not be less than start time: %s and not be greater than current time %s",
+          Util.epochSecondToString(curTimeEpochSec),
+          Util.epochSecondToString(startSec),
+          Util.epochSecondToString(curTimeSec)));
     }
+
+  }
+
+  public int getCurrentStartTimeSec() {
+    return Util.getNowCurrentEpochSeconds();
+  }
+
+  public int getCurrentOperationTimeSec() {
+    return Util.getNowCurrentEpochSeconds();
   }
 
 
