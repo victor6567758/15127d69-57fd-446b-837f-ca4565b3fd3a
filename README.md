@@ -1,6 +1,7 @@
 # PRIORITY QUEUE CODING ASSIGNMENT
 
 ## Design/Implementation considerations
+
 Initially, I had an idea to use something like a priority queue, and an additional Map to keep IDs. However, because priorities are non-decreasing functions of time I decided to keep 4 separate queues  (`com.alvaria.test.pqueue.util.pqueue.OrderPriorityQueueImpl`), thus allowing me to avoid reconstructing them periodically. But this did not help to avoid O(N) complexity when searching by ID. I am still thinking about ideas:
 - Use kinetic structures or similar (https://en.wikipedia.org/wiki/Kinetic_sorted_list, https://github.com/frankfarrell/kds4j)
 - Use a sorted list and insert data according to current priorities, but change swap entries when one class becomes bigger than another class. For example, as some moment max(3; n log n) will be greater than n, max(4; 2n log n) will be greater than max(3; n log n). We can predict the moment in the future when it happens and adjust our list accordingly. It can be done either in a background thread or lazily, before each read.
@@ -19,9 +20,11 @@ augmented trees: https://tildesites.bowdoin.edu/~ltoma/teaching/cs231/fall09/Lec
 I found a sort of implementation: https://github.com/btrekkie/RedBlackNode but to take ownership of that code 
 I will need to add plenty of unit test after refactoring, so using standards Java structures is safer.
 
+
 For merge operation over 3 sorted lists I used a trivial technique, because we have only 3 of them (https://en.wikipedia.org/wiki/Merge_algorithm)
 
 ## Run/Build project
+
 - Build: ```mvn clean install```
 - Run with local profile: ```mvn spring-boot:run -Dspring-boot.run.profiles=local```
 "local" profile is expected to be used with local system development only.
@@ -33,6 +36,7 @@ It uses a light-weight Docker container `com.alvaria.test.pqueue.controller.Queu
 
 
 ## To fix:
+
 - API documentation must be improved
 - Tests must be refactored to match BDD (Given... When... Then...). Unit tests cannot fulfill this completely but still a good idea to align. The number of IT scenarios must be increased.
 - The performance of returning a specific position by ID must be improved.
