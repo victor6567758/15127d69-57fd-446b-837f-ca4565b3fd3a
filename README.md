@@ -21,6 +21,14 @@ I will need to add plenty of unit test after refactoring, so using standards Jav
 
 For merge operation over 3 sorted lists I used a trivial technique, because we have only 3 of them (https://en.wikipedia.org/wiki/Merge_algorithm)
 
+Controller tests `QueueControllerTest` could be more lightweight like with `MockMvc`, for example. 
+I prefer to keep only validation/transformation logic in controllers.
+
+In real PROD project I would use `ObectMaper` or similar to create response objects like
+`QueueDataResponse`. The main idea is not to allow model POJOs directly for REST endpoints.
+
+
+
 ## Run/Build project
 - Build: ```mvn clean install```
 - Run with local profile: ```mvn spring-boot:run -Dspring-boot.run.profiles=local```
