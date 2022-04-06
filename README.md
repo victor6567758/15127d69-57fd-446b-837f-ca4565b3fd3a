@@ -28,6 +28,14 @@ I prefer to keep only validation/transformation logic in controllers.
 In real PROD project I would use `ObectMaper` or similar to create response objects like
 `QueueDataResponse`. The main idea is not to allow model POJOs directly for REST endpoints.
 
+Date time format used in enqueing is:
+`ddMMyyyy_HHmmss`
+So REST call is:
+http://localhost:8080/api/{id}/{dateTime}
+
+
+For output another, more ISO based standard is used:
+`yyyy-MM-dd HH:mm:ss`
 
 
 ## Run/Build project
